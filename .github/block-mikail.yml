@@ -1,0 +1,13 @@
+name: Block Mikail from contributing
+on:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  block-mikail:
+    runs-on: ubuntu-20.04
+    if: github.repository == 'TimeGuardSolutions/ChronoKeeper' && github.event.pull_request.user.login == 'Mikail0'
+    steps:
+    - uses: superbrothers/close-pull-request@v3
+      with:
+        comment: "Einfach nö."
