@@ -9,7 +9,7 @@ class ChronoBar extends AppBar {
           elevation: 0.0,
         );
 
-  static AppBar build(String title) {
+  static AppBar create(String title) {
     return ChronoBar(
         title: Text(
       title,
