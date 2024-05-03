@@ -22,7 +22,7 @@ class _TrackingBodyState extends State<TrackingBody> {
             child: const TrackingFooter()),
         children: const <Widget>[
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 40.0, horizontal: 10.0),
+            padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[

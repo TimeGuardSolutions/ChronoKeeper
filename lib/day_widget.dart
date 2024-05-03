@@ -10,23 +10,28 @@ class DayWidget extends StatelessWidget {
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(
-            date,
-            style: const TextStyle(color: Colors.white),
-          ),
           Container(
-            color: Colors.grey,
-            padding: const EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 20.0),
-            child: const Column(
+            margin: const EdgeInsets.symmetric(vertical: 10.0),
+            child: Text(
+              date,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+          const Card(
+            color: Colors.white70,
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text('Section', style: TextStyle(fontWeight: FontWeight.bold)),
-                Text('Project xy'),
-                SizedBox(height: 10.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[Text('Beschreibung'), Text('HH:MM:SS')],
-                )
+                ListTile(title: Text('Section'), subtitle: Text('Project xy')),
+                Padding(
+                    padding: EdgeInsets.all(10.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text('Beschreibung'),
+                        Text('HH:MM:SS')
+                      ],
+                    ))
               ],
             ),
           ),
