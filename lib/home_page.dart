@@ -1,4 +1,5 @@
 import 'package:chronokeeper/chrono_drawer.dart';
+import 'package:chronokeeper/report_body.dart';
 import 'package:chronokeeper/ui.dart';
 import 'package:flutter/material.dart';
 import 'chrono_bar.dart';
@@ -15,6 +16,7 @@ class _HomePageState extends State<HomePage> {
   UI _currentUI = UI.Zeiterfassung;
   final Map<UI, Widget> _uis = {
     UI.Zeiterfassung: const TrackingBody(),
+    UI.Bericht: const ReportBody(),
   };
 
   void _onChangeUI(UI newUI) {

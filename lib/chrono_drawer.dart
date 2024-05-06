@@ -16,7 +16,6 @@ class ChronoDrawer extends Drawer {
   static Widget createChild(
       UI currentUI, Function(UI) onChangeUI, BuildContext context) {
     return ListView(
-      padding: EdgeInsets.zero,
       children: createOptions(currentUI, onChangeUI, context),
     );
   }
