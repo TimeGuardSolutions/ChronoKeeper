@@ -4,6 +4,13 @@ import 'home_page.dart';
 void main() => runApp(const ChronoKeeper());
 
 class ChronoKeeper extends StatelessWidget {
+  static const Color mainBackgroundColor = Color.fromRGBO(109, 113, 156, 1.0);
+  static const Color secondaryBackgroundColor =
+      Color.fromRGBO(67, 83, 122, 1.0);
+  static const Color tertiaryBackgroundColor =
+      Color.fromRGBO(236, 226, 226, 1.0);
+  static const Color complementaryColor = Color.fromRGBO(245, 158, 66, 1.0);
+
   const ChronoKeeper({super.key});
 
   // This widget is the root of your application.
@@ -27,9 +34,11 @@ class ChronoKeeper extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        appBarTheme: const AppBarTheme(color: Colors.blue),
-        scaffoldBackgroundColor: Colors.deepPurple,
+        colorScheme: ColorScheme.fromSeed(seedColor: complementaryColor),
+        appBarTheme: const AppBarTheme(
+            color: secondaryBackgroundColor,
+            iconTheme: IconThemeData(color: Colors.white)),
+        scaffoldBackgroundColor: mainBackgroundColor,
         useMaterial3: true,
       ),
       home: const HomePage(),
