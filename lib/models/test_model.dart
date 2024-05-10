@@ -8,6 +8,14 @@ class TestProject {
   TestProject(
       {required this.name, required this.description, required this.tasks});
 
+  int getTotalTimeInSeconds() {
+    int totalSeconds = 0;
+    for (TestTask task in tasks ?? []) {
+      totalSeconds += task.getTotalTimeInSeconds();
+    }
+    return totalSeconds;
+  }
+
   List<String> wasWorkedOn() {
     List<String> wasWorkedOn = [];
     for (TestTask task in tasks ?? []) {
@@ -30,10 +38,10 @@ class TestTask {
       required this.subtasks,
       required this.timer});
 
-  int getTotalTime() {
+  int getTotalTimeInSeconds() {
     int totalSeconds = 0;
     for (TestTask task in subtasks ?? []) {
-      totalSeconds += task.getTotalTime();
+      totalSeconds += task.getTotalTimeInSeconds();
     }
     for (TestTimer timer in timer ?? []) {
       totalSeconds += timer.timeDelta.inSeconds;
