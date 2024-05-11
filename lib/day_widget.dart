@@ -34,6 +34,9 @@ class _DayWidgetState extends State<DayWidget> {
 
     for (TestProject project in widget.projects) {
       children.add(ProjectWidget.create(project));
+      children.add(const SizedBox(
+        height: 5,
+      ));
     }
     return children;
   }

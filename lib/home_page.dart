@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: ChronoBar.create(_currentUI.name),
+      appBar: ChronoBar.create(_currentUI.name, context),
       body: _uis[_currentUI],
       drawer: ChronoDrawer.create(_currentUI, _onChangeUI, context),
     );
