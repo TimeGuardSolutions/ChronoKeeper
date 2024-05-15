@@ -10,11 +10,19 @@ class ChronoBar extends AppBar {
               menuChildren: [
                 MenuItemButton(
                   child: const Text("Projekt erstellen"),
-                  onPressed: () {},
+                  onPressed: () async {
+                    final projectName = await AppBarDialog.openDialog(
+                        context, "Projekt eingeben");
+                    if (projectName == null || projectName.isEmpty) return;
+                  },
                 ),
                 MenuItemButton(
                   child: const Text("Task erstellen"),
-                  onPressed: () {},
+                  onPressed: () async {
+                    final taskName =
+                        await AppBarDialog.openDialog(context, "Task eingeben");
+                    if (taskName == null || taskName.isEmpty) return;
+                  },
                 )
               ],
               builder: (BuildContext context, MenuController controller,
@@ -40,5 +48,32 @@ class ChronoBar extends AppBar {
       ),
       context: context,
     );
+  }
+}
+
+class AppBarDialog {
+  static final controller = TextEditingController();
+
+  static Future<String?> openDialog(BuildContext context, String hintText) =>
+      showDialog<String>(
+          context: context,
+          builder: (context) => AlertDialog(
+                content: TextField(
+                  autofocus: true,
+                  decoration: InputDecoration(hintText: hintText),
+                  onSubmitted: (_) => controller.clear,
+                ),
+                actions: [
+                  TextButton(
+                      onPressed: Navigator.of(context).pop,
+                      child: const Text("Abbrechen")),
+                  TextButton(
+                      onPressed: () => onSave(context),
+                      child: const Text("Speichern"))
+                ],
+              ));
+
+  static void onSave(BuildContext context) {
+    Navigator.of(context).pop(controller.text);
   }
 }
