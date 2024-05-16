@@ -1,11 +1,25 @@
 import 'package:chronokeeper/models/model.dart';
 
 class TasksModel extends ChronoKeeperModel {
+  int? id;
   String? name;
   String? description;
   int? project_id;
   int? parent_task_id;
   bool? is_calendar_entry;
+
+  TasksModel({
+    required this.id;
+    required this.name;
+    required this.project_id;
+    required this.is_calendar_entry;
+    this.description;
+    this.parent_task_id;
+  });
+
+  /* Empty Constructor for getting some properties
+    that should be static but i can't get them to be static */
+  TasksModel();
 
   @override
   String get db_fields => '''
@@ -32,14 +46,11 @@ class TasksModel extends ChronoKeeperModel {
       };
 
   @override
-  // TODO: implement dbFields
-  String get dbFields => throw UnimplementedError();
+  String get tableName => 'tasks';
 
   @override
-  // TODO: implement tableName
-  String get tableName => throw UnimplementedError();
+  String get idField => 'id';
 
   @override
-  // TODO: implement id
-  int get id => throw UnimplementedError();
+  int get idValue => this.id;
 }

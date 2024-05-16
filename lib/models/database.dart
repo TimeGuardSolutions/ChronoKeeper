@@ -32,32 +32,8 @@ class ChronoKeeperDatabase {
     // TODO: implement
   }
 
-  Future<void> insert(ChronoKeeperModel m) async {
-    final Database db = await instance.db;
-    final int _ = await db.insert(m.tableName, m.toJson());
-  }
-
-  Future<void> update(ChronoKeeperModel m) async {
-    final Database db = await instance.db;
-    final int _ = await db.update(
-      m.tableName,
-      m.toJson(),
-      where: 'id = ?',  // TODO: ensure correct id field if special name
-      whereArgs: [m.id],
-    );
-  }
-
-  Future<void> delete(ChronoKeeperModel m) async {
-    final Database db = await instance.db;
-    final int _ = await db.delete(
-      m.tableName,
-      where: 'id = ?',   // TODO: ensure correct id field if special name
-      whereArgs: [m.id],
-    );
-  }
-
   Future<void> close() async {
-    final Database db = await instance.db;
+    final Database db = await ChronoKeeperDatabase.instance.db;
     db.close();
     _database = null;
   }

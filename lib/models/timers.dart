@@ -1,6 +1,7 @@
 import 'package:chronokeeper/models/model.dart';
 
 class TimersModel extends ChronoKeeperModel {
+  int? id;
   int? task_id;
   DateTime? start;
   Duration? time_delta;
@@ -16,6 +17,17 @@ class TimersModel extends ChronoKeeperModel {
     )
   ''';
 
+  TimersModel({
+    required this.id;
+    required this.task_id;
+    required this.start;
+    required this.time_delta;
+  });
+
+  /* Empty Constructor for getting some properties
+    that should be static but i can't get them to be static */
+  TimersModel();
+
   @override
   Map<String, Object?> toJson() => {
         'id': id,
@@ -27,14 +39,11 @@ class TimersModel extends ChronoKeeperModel {
       };
 
   @override
-  // TODO: implement dbFields
-  String get dbFields => throw UnimplementedError();
+  String get tableName => 'timers';
 
   @override
-  // TODO: implement tableName
-  String get tableName => throw UnimplementedError();
+  String get idField => 'id';
 
   @override
-  // TODO: implement id
-  int get id => throw UnimplementedError();
+  int get idValue => this.id;
 }

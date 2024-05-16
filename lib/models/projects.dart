@@ -1,11 +1,22 @@
 import 'package:chronokeeper/models/model.dart';
 
 class ProjectsModel extends ChronoKeeperModel {
+  int? id;
   String? name;
   String? description;
 
+  ProjectsModel({
+    required this.id,
+    required this.name,
+    this.description
+  });
+
+  /* Empty Constructor for getting some properties
+      that should be static but i can't get them to be static */
+  ProjectsModel();
+
   @override
-  String get db_fields => '''
+  String get tableCreateStmt => '''
     CREATE TABLE IF NOT EXISTS `projects` (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -15,17 +26,14 @@ class ProjectsModel extends ChronoKeeperModel {
 
   @override
   Map<String, Object?> toJson() =>
-      {'id': id, 'name': name, 'description': description};
+      {'id': this.id, 'name': this.name, 'description': this.description};
 
   @override
-  // TODO: implement dbFields
-  String get dbFields => throw UnimplementedError();
+  String get tableName => 'projects';
 
   @override
-  // TODO: implement tableName
-  String get tableName => throw UnimplementedError();
+  String get idField => 'id';
 
   @override
-  // TODO: implement id
-  int get id => throw UnimplementedError();
+  int get idValue => this.id;
 }
