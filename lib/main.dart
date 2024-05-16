@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
-import 'models/database.dart';
 
 void main() => runApp(const ChronoKeeper());
 

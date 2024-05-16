@@ -1,4 +1,5 @@
 import 'package:chronokeeper/chrono_drawer.dart';
+import 'package:chronokeeper/models/test_model.dart';
 import 'package:chronokeeper/report_body.dart';
 import 'package:chronokeeper/ui.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: ChronoBar.create(_currentUI.name, context),
+      appBar: ChronoBar.create(_currentUI.name, context, dummyData),
       body: _uis[_currentUI],
       drawer: ChronoDrawer.create(_currentUI, _onChangeUI, context),
     );

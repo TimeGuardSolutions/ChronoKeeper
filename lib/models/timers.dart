@@ -35,7 +35,7 @@ class TimersModel extends ChronoKeeperModel {
   String get idField => 'id';
 
   @override
-  int get idValue => this.id!;
+  int get idValue => id!;
 
   @override
   List<String> get columns => ['id', 'task_id', 'start', 'time_delta'];
@@ -50,9 +50,9 @@ class TimersModel extends ChronoKeeperModel {
 
   @override
   TimersModel fromJson(Map<String, Object?> json) => TimersModel(
-    id: json['id'] as int,
-    task_id: json['task_id'] as int,
-    start: DateTime.parse(json['start'] as String),
-    time_delta: Duration(seconds: json['time_delta'] as int),
-  );
+        id: json['id'] as int,
+        task_id: json['task_id'] as int,
+        start: DateTime.parse(json['start'] as String),
+        time_delta: Duration(seconds: json['time_delta'] as int),
+      );
 }

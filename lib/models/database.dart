@@ -37,9 +37,9 @@ class ChronoKeeperDatabase {
       TasksModel.staticInstance(),
       TimersModel.staticInstance()
     ];
-    models.forEach((m) {
-      db.execute(m.tableCreateStmt);
-    });
+    for (var model in models) {
+      db.execute(model.tableCreateStmt);
+    }
   }
 
   Future<void> close() async {

@@ -5,11 +5,7 @@ class ProjectsModel extends ChronoKeeperModel {
   String? name;
   String? description;
 
-  ProjectsModel({
-    required this.id,
-    required this.name,
-    this.description
-  });
+  ProjectsModel({required this.id, required this.name, this.description});
 
   /* Empty Constructor for getting some properties
       that should be static but i can't get them to be static */
@@ -34,16 +30,16 @@ class ProjectsModel extends ChronoKeeperModel {
   List<String> get columns => ['id', 'name', 'description'];
 
   @override
-  int get idValue => this.id!;
+  int get idValue => id!;
 
   @override
   Map<String, Object?> toJson() =>
-      {'id': this.id, 'name': this.name, 'description': this.description};
+      {'id': id, 'name': name, 'description': description};
 
   @override
   ProjectsModel fromJson(Map<String, Object?> json) => ProjectsModel(
-    id: json['id'] as int,
-    name: json['name'] as String,
-    description: json['description'] as String?,
-  );
+        id: json['id'] as int,
+        name: json['name'] as String,
+        description: json['description'] as String?,
+      );
 }
