@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:chronokeeper/main.dart';
 import 'package:flutter/material.dart';
 
 class TrackingFooter extends StatefulWidget {
@@ -29,28 +30,18 @@ class _TrackingState extends State<TrackingFooter> {
     }
   }
 
-  String formatElapsedTime() {
-    int elapsedHours = elapsedSeconds ~/ 3600;
-    elapsedSeconds %= 3600;
-    String hours = elapsedHours < 10 ? '0$elapsedHours' : '$elapsedHours';
-    int elapsedMinutes = elapsedSeconds ~/ 60;
-    elapsedSeconds %= 60;
-    String minutes =
-        elapsedMinutes < 10 ? '0$elapsedMinutes' : '$elapsedMinutes';
-    String seconds =
-        elapsedSeconds < 10 ? '0$elapsedSeconds' : '$elapsedSeconds';
-    return '$hours:$minutes:$seconds';
-  }
-
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        Text(formatElapsedTime()),
+        Text(
+          formatElapsedTime(elapsedSeconds),
+          style: const TextStyle(color: Colors.white),
+        ),
         Container(
           decoration: const ShapeDecoration(
-            color: Colors.orange,
+            color: ChronoKeeper.complementaryColor,
             shape: CircleBorder(),
           ),
           child: IconButton(
@@ -62,4 +53,15 @@ class _TrackingState extends State<TrackingFooter> {
       ],
     );
   }
+}
+
+String formatElapsedTime(int elapsedSeconds) {
+  int elapsedHours = elapsedSeconds ~/ 3600;
+  elapsedSeconds %= 3600;
+  String hours = elapsedHours < 10 ? '0$elapsedHours' : '$elapsedHours';
+  int elapsedMinutes = elapsedSeconds ~/ 60;
+  elapsedSeconds %= 60;
+  String minutes = elapsedMinutes < 10 ? '0$elapsedMinutes' : '$elapsedMinutes';
+  String seconds = elapsedSeconds < 10 ? '0$elapsedSeconds' : '$elapsedSeconds';
+  return '$hours:$minutes:$seconds';
 }

@@ -1,7 +1,18 @@
+import 'package:chronokeeper/main.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import 'models/test_model.dart';
+
 class ReportBody extends StatefulWidget {
+  static const List<Color> colors = [
+    Colors.orange,
+    Colors.blue,
+    Colors.red,
+    Colors.green,
+    Colors.amber
+  ];
+
   const ReportBody({super.key});
 
   @override
@@ -9,138 +20,115 @@ class ReportBody extends StatefulWidget {
 }
 
 class ReportBodyState extends State {
+  final List<TestProject> projects = dummyData;
+  TestProject? selectedProject;
   int touchedIndex = -1;
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1.3,
-      child: Row(
-        children: <Widget>[
-          const SizedBox(
-            height: 18,
-          ),
-          Expanded(
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: PieChart(
-                PieChartData(
-                  pieTouchData: PieTouchData(
-                    touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                      setState(() {
-                        if (!event.isInterestedForInteractions ||
-                            pieTouchResponse == null ||
-                            pieTouchResponse.touchedSection == null) {
-                          touchedIndex = -1;
-                          return;
-                        }
-                        touchedIndex = pieTouchResponse
-                            .touchedSection!.touchedSectionIndex;
-                      });
-                    },
-                  ),
-                  borderData: FlBorderData(
-                    show: false,
-                  ),
-                  sectionsSpace: 0,
-                  centerSpaceRadius: 40,
-                  sections: showingSections(),
-                ),
-              ),
-            ),
-          ),
-          const Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text('First'),
-              SizedBox(
-                height: 4,
-              ),
-              Text('Second'),
-              SizedBox(
-                height: 4,
-              ),
-              Text('Third'),
-              SizedBox(
-                height: 4,
-              ),
-              Text('Fourth'),
-              SizedBox(
-                height: 18,
-              ),
-            ],
-          ),
-          const SizedBox(
-            width: 28,
-          ),
-        ],
-      ),
-    );
+    const double padding = 10.0;
+    return ListView(padding: const EdgeInsets.all(padding), children: [
+      Container(
+          padding: const EdgeInsets.all(padding),
+          decoration: const BoxDecoration(
+              color: ChronoKeeper.tertiaryBackgroundColor,
+              borderRadius: BorderRadius.all(Radius.circular(8))),
+          child: AspectRatio(
+              aspectRatio: 1.3,
+              child: Column(children: [
+                DropdownMenu<TestProject>(
+                    width: MediaQuery.of(context).size.width - 4 * padding,
+                    label: const Text("Projekt"),
+                    onSelected: (project) => setState(() {
+                          selectedProject = project;
+                        }),
+                    dropdownMenuEntries: projects
+                        .map((project) => DropdownMenuEntry<TestProject>(
+                            value: project, label: project.name))
+                        .toList()),
+                Expanded(
+                    child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    AspectRatio(
+                      aspectRatio: 1,
+                      child: PieChart(
+                        PieChartData(
+                          pieTouchData: PieTouchData(
+                            touchCallback:
+                                (FlTouchEvent event, pieTouchResponse) {
+                              setState(() {
+                                if (!event.isInterestedForInteractions ||
+                                    pieTouchResponse == null ||
+                                    pieTouchResponse.touchedSection == null) {
+                                  touchedIndex = -1;
+                                  return;
+                                }
+                                touchedIndex = pieTouchResponse
+                                    .touchedSection!.touchedSectionIndex;
+                              });
+                            },
+                          ),
+                          borderData: FlBorderData(
+                            show: false,
+                          ),
+                          sectionsSpace: 0,
+                          centerSpaceRadius: 40,
+                          sections: showingSections(),
+                        ),
+                      ),
+                    ),
+                    Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: createDescriptions()),
+                    const SizedBox(
+                      width: 28,
+                    ),
+                  ],
+                )),
+              ]))),
+    ]);
+  }
+
+  List<Widget> createDescriptions() {
+    List<Widget> descriptions = [];
+    int currentIndex = 0;
+    for (TestTask task in selectedProject?.tasks ?? []) {
+      descriptions.add(Text(
+        task.name,
+        style: TextStyle(
+            color: ReportBody.colors[currentIndex++ % ReportBody.colors.length],
+            fontWeight: FontWeight.bold),
+      ));
+      descriptions.add(const SizedBox(
+        height: 4,
+      ));
+    }
+    descriptions.add(const SizedBox(
+      height: 14,
+    ));
+    return descriptions;
   }
 
   List<PieChartSectionData> showingSections() {
-    return List.generate(4, (i) {
-      final isTouched = i == touchedIndex;
-      final fontSize = isTouched ? 25.0 : 16.0;
-      final radius = isTouched ? 60.0 : 50.0;
-      const shadows = [Shadow(color: Colors.black, blurRadius: 2)];
-      switch (i) {
-        case 0:
-          return PieChartSectionData(
-            color: Colors.blue,
-            value: 40,
-            title: '40%',
-            radius: radius,
-            titleStyle: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-              shadows: shadows,
-            ),
-          );
-        case 1:
-          return PieChartSectionData(
-            color: Colors.yellow,
-            value: 30,
-            title: '30%',
-            radius: radius,
-            titleStyle: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-              shadows: shadows,
-            ),
-          );
-        case 2:
-          return PieChartSectionData(
-            color: Colors.purple,
-            value: 15,
-            title: '15%',
-            radius: radius,
-            titleStyle: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-              shadows: shadows,
-            ),
-          );
-        case 3:
-          return PieChartSectionData(
-            color: Colors.green,
-            value: 15,
-            title: '15%',
-            radius: radius,
-            titleStyle: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-              shadows: shadows,
-            ),
-          );
-        default:
-          throw Error();
-      }
-    });
+    final double totalProjectTime =
+        selectedProject?.getTotalTimeInSeconds().toDouble() ?? 0.0;
+    int currentIndex = 0;
+    List<PieChartSectionData> sections = [];
+    for (TestTask task in selectedProject?.tasks ?? []) {
+      final double totalTaskTime = task.getTotalTimeInSeconds().toDouble();
+      sections.add(PieChartSectionData(
+          color: ReportBody.colors[currentIndex % ReportBody.colors.length],
+          value: totalTaskTime,
+          title:
+              "${(totalTaskTime / totalProjectTime * 100).toStringAsFixed(2)}%",
+          titleStyle: TextStyle(
+              fontSize: (currentIndex == touchedIndex ? 25.0 : 16.0),
+              fontWeight: FontWeight.bold),
+          radius: (currentIndex == touchedIndex ? 60.0 : 50.0)));
+      ++currentIndex;
+    }
+    return sections;
   }
 }
