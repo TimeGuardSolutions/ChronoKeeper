@@ -1,4 +1,7 @@
+import 'package:sqflite/sqflite.dart';
 import 'package:chronokeeper/models/model.dart';
+import 'database.dart';
+import 'tasks.dart';
 
 class ProjectsModel extends ChronoKeeperModel {
   int? id;
@@ -43,8 +46,16 @@ class ProjectsModel extends ChronoKeeperModel {
         description: json['description'] as String?,
       );
 
-  @override
-  String toString() {
-    return "id: $id\nname: $name\ndescription: $description\n";
+  Stream<TasksModel> readTasks() async* {
+    final Database db = await ChronoKeeperDatabase.instance.db;
+    final maps = await db.query(
+      TasksModel.staticInstance().tableName,
+      columns: TasksModel.staticInstance().columns,
+      where: 'project_id = ?',
+      whereArgs: [id],
+    );
+    for (var map in maps) {
+      yield TasksModel.staticInstance().fromJson(map);
+    }
   }
 }
