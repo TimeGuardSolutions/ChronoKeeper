@@ -1,5 +1,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'model.dart';
+import 'projects.dart';
+import 'tasks.dart';
+import 'timers.dart';
 
 class ChronoKeeperDatabase {
   static final ChronoKeeperDatabase instance = ChronoKeeperDatabase._internal();
@@ -29,7 +32,14 @@ class ChronoKeeperDatabase {
   }
 
   Future<void> _createDatabase(Database db, _) async {
-    // TODO: implement
+    List<ChronoKeeperModel> models = [
+      ProjectsModel.staticInstance(),
+      TasksModel.staticInstance(),
+      TimersModel.staticInstance()
+    ];
+    models.forEach((m) {
+      db.execute(m.tableCreateStmt);
+    });
   }
 
   Future<void> close() async {

@@ -13,7 +13,7 @@ class ProjectsModel extends ChronoKeeperModel {
 
   /* Empty Constructor for getting some properties
       that should be static but i can't get them to be static */
-  ProjectsModel();
+  ProjectsModel.staticInstance();
 
   @override
   String get tableCreateStmt => '''
@@ -25,15 +25,25 @@ class ProjectsModel extends ChronoKeeperModel {
   ''';
 
   @override
-  Map<String, Object?> toJson() =>
-      {'id': this.id, 'name': this.name, 'description': this.description};
-
-  @override
   String get tableName => 'projects';
 
   @override
   String get idField => 'id';
 
   @override
-  int get idValue => this.id;
+  List<String> get columns => ['id', 'name', 'description'];
+
+  @override
+  int get idValue => this.id!;
+
+  @override
+  Map<String, Object?> toJson() =>
+      {'id': this.id, 'name': this.name, 'description': this.description};
+
+  @override
+  ProjectsModel fromJson(Map<String, Object?> json) => ProjectsModel(
+    id: json['id'] as int,
+    name: json['name'] as String,
+    description: json['description'] as String?,
+  );
 }
