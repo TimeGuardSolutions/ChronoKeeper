@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:chronokeeper/main.dart';
 import 'package:flutter/material.dart';
 
+import 'models/test_model.dart';
+
 class TrackingFooter extends StatefulWidget {
   const TrackingFooter({super.key});
 
@@ -27,6 +29,8 @@ class _TrackingState extends State<TrackingFooter> {
           }
         });
       });
+    } else {
+      TrackingFooterDialog.openSelectTaskDialog(context, dummyData);
     }
   }
 
@@ -64,4 +68,58 @@ String formatElapsedTime(int elapsedSeconds) {
   String minutes = elapsedMinutes < 10 ? '0$elapsedMinutes' : '$elapsedMinutes';
   String seconds = elapsedSeconds < 10 ? '0$elapsedSeconds' : '$elapsedSeconds';
   return '$hours:$minutes:$seconds';
+}
+
+class TrackingFooterDialog {
+  static String? _selectedProject;
+
+  static Future<String?> openSelectTaskDialog(
+      BuildContext context, List<TestProject> projects) {
+    Map<int, String> taskMenuItems = createTaskMenuItems(projects);
+    return showDialog<String>(
+        context: context,
+        builder: (context) => StatefulBuilder(
+            builder: (context, setState) => AlertDialog(
+                  content: DropdownButton<String>(
+                      value: _selectedProject,
+                      items: taskMenuItems.entries
+                          .map((e) => DropdownMenuItem(
+                              value: e.key.toString(), child: Text(e.value)))
+                          .toList(),
+                      onChanged: (String? selectedValue) {
+                        setState(() => _selectedProject = selectedValue);
+                      }),
+                  actions: [
+                    TextButton(
+                        onPressed: Navigator.of(context).pop,
+                        child: const Text("Abbrechen")),
+                    TextButton(
+                        onPressed: () => onSave(context),
+                        child: const Text("Speichern"))
+                  ],
+                )));
+  }
+
+  static void onSave(BuildContext context) {
+    Navigator.of(context).pop();
+  }
+
+  static Map<int, String> createTaskMenuItems(List<TestProject> projects) {
+    Map<int, String> taskMenuItems = {};
+    for (var project in projects) {
+      for (var task in project.tasks ?? []) {
+        insertTaskMenuItem(taskMenuItems, task, project.name);
+      }
+    }
+    return taskMenuItems;
+  }
+
+  static void insertTaskMenuItem(
+      Map<int, String> taskMenuItems, TestTask task, String name) {
+    String taskName = "$name - ${task.name}";
+    taskMenuItems[taskMenuItems.length] = taskName;
+    for (var subtask in task.subtasks ?? []) {
+      insertTaskMenuItem(taskMenuItems, subtask, taskName);
+    }
+  }
 }

@@ -85,7 +85,7 @@ class AppBarDialog {
       showDialog<String>(
           context: context,
           builder: (context) => StatefulBuilder(
-              builder: (context, setStateSB) => AlertDialog(
+              builder: (context, setState) => AlertDialog(
                     content: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -97,7 +97,7 @@ class AppBarDialog {
                                     value: projects[index].name,
                                     child: Text(projects[index].name))),
                             onChanged: (String? selectedValue) {
-                              _selectedProject = selectedValue;
+                              setState(() => _selectedProject = selectedValue);
                             }),
                         TextField(
                           decoration: InputDecoration(hintText: hintText),
