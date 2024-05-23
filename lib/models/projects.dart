@@ -6,7 +6,7 @@ class ProjectsModel extends ChronoKeeperModel {
   String? description;
 
   ProjectsModel({
-    required this.id,
+    this.id,
     required this.name,
     this.description
   });

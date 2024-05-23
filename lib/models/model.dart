@@ -51,11 +51,37 @@ abstract class ChronoKeeperModel {
     }
   }
 
+  Stream<ChronoKeeperModel> readMany(List<int> ids) async* {
+    if (ids.isEmpty) {
+      throw ArgumentError('The list of IDs cannot be empty');
+    }
+
+    final Database db = await ChronoKeeperDatabase.instance.db;
+    final placeholders = List.generate(ids.length, (index) => '?').join(',');
+    final maps = await db.query(
+      this.tableName,
+      columns: this.columns,
+      where: 'id IN ($placeholders)',
+      whereArgs: ids,
+    );
+    for (var map in maps) {
+      yield this.fromJson(map);
+    }
+  }
+
   Stream<ChronoKeeperModel> readAll() async* {
     final Database db = await ChronoKeeperDatabase.instance.db;
     final maps = await db.query(this.tableName);
     for (var map in maps) {
       yield this.fromJson(map);
     }
+  }
+
+  Future<Map<int?, ChronoKeeperModel>> createIndex(List<ChronoKeeperModel> models) async {
+    Map<int?, ChronoKeeperModel> index = Map();
+    for (var model in models) {
+      index[model.idValue] = model;
+    }
+    return index;
   }
 }
