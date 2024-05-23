@@ -1,3 +1,4 @@
+import 'package:chronokeeper/models/projects.dart';
 import 'package:flutter/material.dart';
 
 import 'models/test_model.dart';
@@ -14,17 +15,18 @@ class ChronoBar extends AppBar {
                 MenuItemButton(
                   child: const Text("Projekt erstellen"),
                   onPressed: () async {
-                    final projectName = await AppBarDialog.openProjectDialog(
-                        context, "Projekt eingeben");
-                    if (projectName == null || projectName.isEmpty) return;
+                    final projectData =
+                        await AppBarDialog.openProjectDialog(context);
+                    await ProjectsModel(
+                            name: projectData?[0], description: projectData?[1])
+                        .insert();
                   },
                 ),
                 MenuItemButton(
                   child: const Text("Task erstellen"),
                   onPressed: () async {
-                    final taskName = await AppBarDialog.openTaskDialog(
-                        context, "Task eingeben", projects);
-                    if (taskName == null || taskName.isEmpty) return;
+                    final taskData =
+                        await AppBarDialog.openTaskDialog(context, projects);
                   },
                 )
               ],
@@ -57,65 +59,129 @@ class ChronoBar extends AppBar {
 }
 
 class AppBarDialog {
-  static final controller = TextEditingController();
-  static String? _selectedProject;
-
-  static Future<String?> openProjectDialog(
-          BuildContext context, String hintText) =>
-      showDialog<String>(
-          context: context,
-          builder: (context) => AlertDialog(
-                content: TextField(
-                  autofocus: true,
-                  decoration: InputDecoration(hintText: hintText),
-                  onSubmitted: (_) => controller.clear,
-                ),
-                actions: [
-                  TextButton(
-                      onPressed: Navigator.of(context).pop,
-                      child: const Text("Abbrechen")),
-                  TextButton(
-                      onPressed: () => onSave(context),
-                      child: const Text("Speichern"))
+  static Future<List<String>?> openProjectDialog(BuildContext context) {
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
+    return showDialog<List<String>>(
+        context: context,
+        builder: (context) => AlertDialog(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: nameController,
+                    autofocus: true,
+                    decoration:
+                        const InputDecoration(hintText: "Projektname eingeben"),
+                    onSubmitted: (_) => nameController.clear,
+                  ),
+                  TextField(
+                    controller: descriptionController,
+                    decoration: const InputDecoration(
+                        hintText: "Beschreibung eingeben"),
+                    onSubmitted: (_) => descriptionController.clear,
+                  )
                 ],
-              ));
+              ),
+              actions: [
+                TextButton(
+                    onPressed: Navigator.of(context).pop,
+                    child: const Text("Abbrechen")),
+                TextButton(
+                    onPressed: () => onProjectSave(
+                        context, nameController, descriptionController),
+                    child: const Text("Speichern"))
+              ],
+            ));
+  }
 
-  static Future<String?> openTaskDialog(
-          BuildContext context, String hintText, List<TestProject> projects) =>
-      showDialog<String>(
-          context: context,
-          builder: (context) => StatefulBuilder(
-              builder: (context, setState) => AlertDialog(
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        DropdownButton<String>(
-                            value: _selectedProject,
-                            items: List.generate(
-                                projects.length,
-                                (index) => DropdownMenuItem(
-                                    value: projects[index].name,
-                                    child: Text(projects[index].name))),
-                            onChanged: (String? selectedValue) {
-                              setState(() => _selectedProject = selectedValue);
-                            }),
-                        TextField(
-                          decoration: InputDecoration(hintText: hintText),
-                          onSubmitted: (_) => controller.clear,
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      TextButton(
-                          onPressed: Navigator.of(context).pop,
-                          child: const Text("Abbrechen")),
-                      TextButton(
-                          onPressed: () => onSave(context),
-                          child: const Text("Speichern"))
+  static void onProjectSave(
+      BuildContext context,
+      TextEditingController nameController,
+      TextEditingController descriptionController) {
+    if (nameController.text.isNotEmpty) {
+      Navigator.of(context)
+          .pop([nameController.text, descriptionController.text]);
+    }
+  }
+
+  static Future<List<String>?> openTaskDialog(
+      BuildContext context, List<TestProject> projects) {
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
+    String? selectedProject;
+    Map<int, String> taskMenuItems = createTaskMenuItems(projects);
+    return showDialog<List<String>>(
+        context: context,
+        builder: (context) => StatefulBuilder(
+            builder: (context, setState) => AlertDialog(
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      DropdownButton<String>(
+                          value: selectedProject,
+                          items: taskMenuItems.entries
+                              .map((e) => DropdownMenuItem(
+                                  value: e.key.toString(),
+                                  child: Text(e.value)))
+                              .toList(),
+                          onChanged: (String? selectedValue) {
+                            setState(() => selectedProject = selectedValue);
+                          }),
+                      TextField(
+                        controller: nameController,
+                        decoration: const InputDecoration(
+                            hintText: "Taskname eingeben"),
+                        onSubmitted: (_) => nameController.clear,
+                      ),
+                      TextField(
+                        controller: descriptionController,
+                        decoration: const InputDecoration(
+                            hintText: "Beschreibung eingeben"),
+                        onSubmitted: (_) => descriptionController.clear,
+                      )
                     ],
-                  )));
+                  ),
+                  actions: [
+                    TextButton(
+                        onPressed: Navigator.of(context).pop,
+                        child: const Text("Abbrechen")),
+                    TextButton(
+                        onPressed: () => onTaskSave(context, selectedProject,
+                            nameController, descriptionController),
+                        child: const Text("Speichern"))
+                  ],
+                )));
+  }
 
-  static void onSave(BuildContext context) {
-    Navigator.of(context).pop(controller.text);
+  static void onTaskSave(
+      BuildContext context,
+      String? project,
+      TextEditingController nameController,
+      TextEditingController descriptionController) {
+    if (project != null && nameController.text.isNotEmpty) {
+      Navigator.of(context)
+          .pop([project, nameController.text, descriptionController.text]);
+    }
+  }
+
+  static Map<int, String> createTaskMenuItems(List<TestProject> projects) {
+    Map<int, String> taskMenuItems = {};
+    for (var project in projects) {
+      taskMenuItems[taskMenuItems.length] = project.name;
+      for (var task in project.tasks ?? []) {
+        insertTaskMenuItem(taskMenuItems, task, project.name);
+      }
+    }
+    return taskMenuItems;
+  }
+
+  static void insertTaskMenuItem(
+      Map<int, String> taskMenuItems, TestTask task, String name) {
+    String taskName = "$name - ${task.name}";
+    taskMenuItems[taskMenuItems.length] = taskName;
+    for (var subtask in task.subtasks ?? []) {
+      insertTaskMenuItem(taskMenuItems, subtask, taskName);
+    }
   }
 }

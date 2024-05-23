@@ -7,7 +7,7 @@ class TimersModel extends ChronoKeeperModel {
   Duration? time_delta;
 
   TimersModel({
-    required this.id,
+    this.id,
     required this.task_id,
     required this.start,
     required this.time_delta,

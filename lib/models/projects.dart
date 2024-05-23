@@ -5,7 +5,7 @@ class ProjectsModel extends ChronoKeeperModel {
   String? name;
   String? description;
 
-  ProjectsModel({required this.id, required this.name, this.description});
+  ProjectsModel({this.id, required this.name, this.description});
 
   /* Empty Constructor for getting some properties
       that should be static but i can't get them to be static */
@@ -42,4 +42,9 @@ class ProjectsModel extends ChronoKeeperModel {
         name: json['name'] as String,
         description: json['description'] as String?,
       );
+
+  @override
+  String toString() {
+    return "id: $id\nname: $name\ndescription: $description\n";
+  }
 }
