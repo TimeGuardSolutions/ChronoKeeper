@@ -46,6 +46,11 @@ class ProjectsModel extends ChronoKeeperModel {
         description: json['description'] as String?,
       );
 
+  @override
+  String toString() {
+    return "id: $id\nname: $name\ndescription: $description\n";
+  }
+
   Stream<TasksModel> readTasks() async* {
     final Database db = await ChronoKeeperDatabase.instance.db;
     final maps = await db.query(
