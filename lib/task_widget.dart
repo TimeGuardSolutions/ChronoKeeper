@@ -1,4 +1,4 @@
-import 'package:chronokeeper/models/test_model.dart';
+import 'package:chronokeeper/models/model_wrapper.dart';
 import 'package:flutter/material.dart';
 
 import 'tracking_footer.dart';
@@ -10,20 +10,20 @@ class TaskWidget extends ExpansionTile {
             initiallyExpanded: true,
             controlAffinity: ListTileControlAffinity.leading);
 
-  static Widget create(TestTask task) {
+  static Widget create(TasksModelWrapper task) {
     return TaskWidget(
-      title: Text(task.name),
-      subtitle: Text(task.description ?? ""),
+      title: Text(task.getName()),
+      subtitle: Text(task.getDescription()),
       children: createChildren(task),
     );
   }
 
-  static List<Widget> createChildren(TestTask task) {
+  static List<Widget> createChildren(TasksModelWrapper task) {
     final List<Widget> children = [];
-    for (TestTask subtask in task.subtasks ?? []) {
+    for (TasksModelWrapper subtask in task.getSubtasks()) {
       children.add(TaskWidget.create(subtask));
     }
-    for (TestTimer timer in task.timer ?? []) {
+    for (TimersModelWrapper timer in task.getTimers()) {
       children.add(ListTile(
           title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

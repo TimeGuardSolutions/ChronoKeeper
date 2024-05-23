@@ -1,14 +1,13 @@
-import 'package:chronokeeper/models/projects.dart';
 import 'package:flutter/material.dart';
 
-import 'models/test_model.dart';
+import 'models/model_wrapper.dart';
 
 class ChronoBar extends AppBar {
   ChronoBar({
     super.key,
     required Text super.title,
     required BuildContext context,
-    required List<TestProject> projects,
+    required Data data,
   }) : super(centerTitle: true, elevation: 0.0, actions: [
           MenuAnchor(
               menuChildren: [
@@ -17,16 +16,14 @@ class ChronoBar extends AppBar {
                   onPressed: () async {
                     final projectData =
                         await AppBarDialog.openProjectDialog(context);
-                    await ProjectsModel(
-                            name: projectData?[0], description: projectData?[1])
-                        .insert();
+                    data.addProject(projectData?[0] ?? "", projectData?[1]);
                   },
                 ),
                 MenuItemButton(
                   child: const Text("Task erstellen"),
                   onPressed: () async {
-                    final taskData =
-                        await AppBarDialog.openTaskDialog(context, projects);
+                    final taskData = await AppBarDialog.openTaskDialog(
+                        context, data.getProjects());
                   },
                 )
               ],
@@ -45,15 +42,14 @@ class ChronoBar extends AppBar {
               })
         ]);
 
-  static AppBar create(
-      String title, BuildContext context, List<TestProject> projects) {
+  static AppBar create(String title, BuildContext context, Data data) {
     return ChronoBar(
       title: Text(
         title,
         style: const TextStyle(color: Colors.white),
       ),
       context: context,
-      projects: projects,
+      data: data,
     );
   }
 }
@@ -106,7 +102,7 @@ class AppBarDialog {
   }
 
   static Future<List<String>?> openTaskDialog(
-      BuildContext context, List<TestProject> projects) {
+      BuildContext context, Iterable<ProjectsModelWrapper> projects) {
     final nameController = TextEditingController();
     final descriptionController = TextEditingController();
     String? selectedProject;
@@ -165,22 +161,23 @@ class AppBarDialog {
     }
   }
 
-  static Map<int, String> createTaskMenuItems(List<TestProject> projects) {
+  static Map<int, String> createTaskMenuItems(
+      Iterable<ProjectsModelWrapper> projects) {
     Map<int, String> taskMenuItems = {};
     for (var project in projects) {
-      taskMenuItems[taskMenuItems.length] = project.name;
-      for (var task in project.tasks ?? []) {
-        insertTaskMenuItem(taskMenuItems, task, project.name);
+      taskMenuItems[taskMenuItems.length] = project.getName();
+      for (var task in project.getTasks()) {
+        insertTaskMenuItem(taskMenuItems, task, project.getName());
       }
     }
     return taskMenuItems;
   }
 
   static void insertTaskMenuItem(
-      Map<int, String> taskMenuItems, TestTask task, String name) {
-    String taskName = "$name - ${task.name}";
+      Map<int, String> taskMenuItems, TasksModelWrapper task, String name) {
+    String taskName = "$name - ${task.getName()}";
     taskMenuItems[taskMenuItems.length] = taskName;
-    for (var subtask in task.subtasks ?? []) {
+    for (var subtask in task.getSubtasks()) {
       insertTaskMenuItem(taskMenuItems, subtask, taskName);
     }
   }

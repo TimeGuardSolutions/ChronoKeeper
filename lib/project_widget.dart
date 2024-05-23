@@ -1,4 +1,4 @@
-import 'package:chronokeeper/models/test_model.dart';
+import 'package:chronokeeper/models/model_wrapper.dart';
 import 'package:chronokeeper/task_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -17,16 +17,16 @@ class ProjectWidget extends ExpansionTile {
             collapsedShape: border,
             clipBehavior: Clip.antiAlias);
 
-  static Widget create(TestProject project) {
+  static Widget create(ProjectsModelWrapper project) {
     return ProjectWidget(
-        title: Text(project.name),
-        subtitle: Text(project.description ?? ""),
-        children: createChildren(project.tasks ?? []));
+        title: Text(project.getName()),
+        subtitle: Text(project.getDescription()),
+        children: createChildren(project.getTasks()));
   }
 
-  static List<Widget> createChildren(List<TestTask> tasks) {
+  static List<Widget> createChildren(Iterable<TasksModelWrapper> tasks) {
     List<Widget> children = [];
-    for (TestTask task in tasks) {
+    for (TasksModelWrapper task in tasks) {
       children.add(TaskWidget.create(task));
     }
     return children;

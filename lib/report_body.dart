@@ -2,7 +2,7 @@ import 'package:chronokeeper/main.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-import 'models/test_model.dart';
+import 'models/model_wrapper.dart';
 
 class ReportBody extends StatefulWidget {
   static const List<Color> colors = [
@@ -13,15 +13,15 @@ class ReportBody extends StatefulWidget {
     Colors.amber
   ];
 
-  const ReportBody({super.key});
+  final Data data;
+  const ReportBody({super.key, required this.data});
 
   @override
   State<StatefulWidget> createState() => ReportBodyState();
 }
 
 class ReportBodyState extends State {
-  final List<TestProject> projects = dummyData;
-  TestProject? selectedProject;
+  ProjectsModelWrapper? selectedProject;
   int touchedIndex = -1;
 
   @override
@@ -36,15 +36,18 @@ class ReportBodyState extends State {
           child: AspectRatio(
               aspectRatio: 1.3,
               child: Column(children: [
-                DropdownMenu<TestProject>(
+                DropdownMenu<ProjectsModelWrapper>(
                     width: MediaQuery.of(context).size.width - 4 * padding,
                     label: const Text("Projekt"),
                     onSelected: (project) => setState(() {
                           selectedProject = project;
                         }),
-                    dropdownMenuEntries: projects
-                        .map((project) => DropdownMenuEntry<TestProject>(
-                            value: project, label: project.name))
+                    dropdownMenuEntries: (widget as ReportBody)
+                        .data
+                        .getProjects()
+                        .map((project) =>
+                            DropdownMenuEntry<ProjectsModelWrapper>(
+                                value: project, label: project.getName()))
                         .toList()),
                 Expanded(
                     child: Row(
@@ -94,9 +97,9 @@ class ReportBodyState extends State {
   List<Widget> createDescriptions() {
     List<Widget> descriptions = [];
     int currentIndex = 0;
-    for (TestTask task in selectedProject?.tasks ?? []) {
+    for (TasksModelWrapper task in selectedProject?.getTasks() ?? []) {
       descriptions.add(Text(
-        task.name,
+        task.getName(),
         style: TextStyle(
             color: ReportBody.colors[currentIndex++ % ReportBody.colors.length],
             fontWeight: FontWeight.bold),
@@ -116,7 +119,7 @@ class ReportBodyState extends State {
         selectedProject?.getTotalTimeInSeconds().toDouble() ?? 0.0;
     int currentIndex = 0;
     List<PieChartSectionData> sections = [];
-    for (TestTask task in selectedProject?.tasks ?? []) {
+    for (TasksModelWrapper task in selectedProject?.getTasks() ?? []) {
       final double totalTaskTime = task.getTotalTimeInSeconds().toDouble();
       sections.add(PieChartSectionData(
           color: ReportBody.colors[currentIndex % ReportBody.colors.length],

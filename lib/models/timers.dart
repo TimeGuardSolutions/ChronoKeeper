@@ -2,15 +2,15 @@ import 'package:chronokeeper/models/model.dart';
 
 class TimersModel extends ChronoKeeperModel {
   int? id;
-  int? task_id;
+  int? taskId;
   DateTime? start;
-  Duration? time_delta;
+  Duration? timeDelta;
 
   TimersModel({
     this.id,
-    required this.task_id,
+    required this.taskId,
     required this.start,
-    required this.time_delta,
+    required this.timeDelta,
   });
 
   /* Empty Constructor for getting some properties
@@ -43,16 +43,16 @@ class TimersModel extends ChronoKeeperModel {
   @override
   Map<String, Object?> toJson() => {
         'id': id,
-        'task_id': task_id,
+        'task_id': taskId,
         'start': start?.toIso8601String(),
-        'time_delta': time_delta?.inSeconds,
+        'time_delta': timeDelta?.inSeconds,
       };
 
   @override
   TimersModel fromJson(Map<String, Object?> json) => TimersModel(
         id: json['id'] as int,
-        task_id: json['task_id'] as int,
+        taskId: json['task_id'] as int,
         start: DateTime.parse(json['start'] as String),
-        time_delta: Duration(seconds: json['time_delta'] as int),
+        timeDelta: Duration(seconds: json['time_delta'] as int),
       );
 }

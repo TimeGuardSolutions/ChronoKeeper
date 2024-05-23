@@ -56,7 +56,7 @@ class ProjectsModel extends ChronoKeeperModel {
     final maps = await db.query(
       TasksModel.staticInstance().tableName,
       columns: TasksModel.staticInstance().columns,
-      where: 'project_id = ?',
+      where: 'project_id = ? AND parent_task_id = NULL',
       whereArgs: [id],
     );
     for (var map in maps) {

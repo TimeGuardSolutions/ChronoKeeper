@@ -51,11 +51,11 @@ abstract class ChronoKeeperModel {
     }
   }
 
-  Stream<ChronoKeeperModel> readAll() async* {
+  Stream<T> readAll<T extends ChronoKeeperModel>() async* {
     final Database db = await ChronoKeeperDatabase.instance.db;
     final maps = await db.query(tableName);
     for (var map in maps) {
-      yield fromJson(map);
+      yield fromJson(map) as T;
     }
   }
 }

@@ -1,11 +1,11 @@
 import 'package:chronokeeper/project_widget.dart';
 import 'package:flutter/material.dart';
 
-import 'models/test_model.dart';
+import 'models/model_wrapper.dart';
 
 class DayWidget extends StatefulWidget {
   final String date;
-  final List<TestProject> projects;
+  final List<ProjectsModelWrapper> projects;
 
   const DayWidget({super.key, required this.date, required this.projects});
 
@@ -32,7 +32,7 @@ class _DayWidgetState extends State<DayWidget> {
       ),
     ));
 
-    for (TestProject project in widget.projects) {
+    for (ProjectsModelWrapper project in widget.projects) {
       children.add(ProjectWidget.create(project));
       children.add(const SizedBox(
         height: 5,

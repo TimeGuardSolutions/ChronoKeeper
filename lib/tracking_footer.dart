@@ -2,10 +2,12 @@ import 'dart:async';
 import 'package:chronokeeper/main.dart';
 import 'package:flutter/material.dart';
 
-import 'models/test_model.dart';
+import 'models/model_wrapper.dart';
 
 class TrackingFooter extends StatefulWidget {
-  const TrackingFooter({super.key});
+  final Data data;
+
+  const TrackingFooter({super.key, required this.data});
 
   @override
   State<TrackingFooter> createState() => _TrackingState();
@@ -30,7 +32,8 @@ class _TrackingState extends State<TrackingFooter> {
         });
       });
     } else {
-      TrackingFooterDialog.openSelectTaskDialog(context, dummyData);
+      TrackingFooterDialog.openSelectTaskDialog(
+          context, (widget).data.getProjects());
     }
   }
 
@@ -74,7 +77,7 @@ class TrackingFooterDialog {
   static String? _selectedProject;
 
   static Future<String?> openSelectTaskDialog(
-      BuildContext context, List<TestProject> projects) {
+      BuildContext context, Iterable<ProjectsModelWrapper> projects) {
     Map<int, String> taskMenuItems = createTaskMenuItems(projects);
     return showDialog<String>(
         context: context,
@@ -104,21 +107,22 @@ class TrackingFooterDialog {
     Navigator.of(context).pop();
   }
 
-  static Map<int, String> createTaskMenuItems(List<TestProject> projects) {
+  static Map<int, String> createTaskMenuItems(
+      Iterable<ProjectsModelWrapper> projects) {
     Map<int, String> taskMenuItems = {};
     for (var project in projects) {
-      for (var task in project.tasks ?? []) {
-        insertTaskMenuItem(taskMenuItems, task, project.name);
+      for (var task in project.getTasks()) {
+        insertTaskMenuItem(taskMenuItems, task, project.getName());
       }
     }
     return taskMenuItems;
   }
 
   static void insertTaskMenuItem(
-      Map<int, String> taskMenuItems, TestTask task, String name) {
-    String taskName = "$name - ${task.name}";
+      Map<int, String> taskMenuItems, TasksModelWrapper task, String name) {
+    String taskName = "$name - ${task.getName()}";
     taskMenuItems[taskMenuItems.length] = taskName;
-    for (var subtask in task.subtasks ?? []) {
+    for (var subtask in task.getSubtasks()) {
       insertTaskMenuItem(taskMenuItems, subtask, taskName);
     }
   }
