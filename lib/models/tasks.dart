@@ -9,7 +9,7 @@ class TasksModel extends ChronoKeeperModel {
   int? parent_task_id;
 
   TasksModel({
-    required this.id,
+    this.id,
     required this.name,
     required this.project_id,
     required this.is_calendar_entry,
