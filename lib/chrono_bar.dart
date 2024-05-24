@@ -1,3 +1,4 @@
+import 'package:chronokeeper/models/tasks.dart';
 import 'package:flutter/material.dart';
 
 import 'models/model_wrapper.dart';
@@ -22,8 +23,7 @@ class ChronoBar extends AppBar {
                 MenuItemButton(
                   child: const Text("Task erstellen"),
                   onPressed: () async {
-                    final taskData = await AppBarDialog.openTaskDialog(
-                        context, data.getProjects());
+                    await AppBarDialog.openTaskDialog(context, data);
                   },
                 )
               ],
@@ -101,12 +101,12 @@ class AppBarDialog {
     }
   }
 
-  static Future<List<String>?> openTaskDialog(
-      BuildContext context, Iterable<ProjectsModelWrapper> projects) {
+  static Future<void> openTaskDialog(BuildContext context, Data data) {
     final nameController = TextEditingController();
     final descriptionController = TextEditingController();
-    String? selectedProject;
-    Map<int, String> taskMenuItems = createTaskMenuItems(projects);
+    TaskContainer? selectedTaskContainer;
+    Map<TaskContainer, String> taskMenuItems =
+        createTaskMenuItems(data.getProjects());
     return showDialog<List<String>>(
         context: context,
         builder: (context) => StatefulBuilder(
@@ -114,15 +114,15 @@ class AppBarDialog {
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      DropdownButton<String>(
-                          value: selectedProject,
+                      DropdownButton<TaskContainer>(
+                          value: selectedTaskContainer,
                           items: taskMenuItems.entries
-                              .map((e) => DropdownMenuItem(
-                                  value: e.key.toString(),
-                                  child: Text(e.value)))
+                              .map((e) => DropdownMenuItem<TaskContainer>(
+                                  value: e.key, child: Text(e.value)))
                               .toList(),
-                          onChanged: (String? selectedValue) {
-                            setState(() => selectedProject = selectedValue);
+                          onChanged: (TaskContainer? selectedValue) {
+                            setState(
+                                () => selectedTaskContainer = selectedValue);
                           }),
                       TextField(
                         controller: nameController,
@@ -143,8 +143,11 @@ class AppBarDialog {
                         onPressed: Navigator.of(context).pop,
                         child: const Text("Abbrechen")),
                     TextButton(
-                        onPressed: () => onTaskSave(context, selectedProject,
-                            nameController, descriptionController),
+                        onPressed: () => onTaskSave(
+                            context,
+                            selectedTaskContainer,
+                            nameController,
+                            descriptionController),
                         child: const Text("Speichern"))
                   ],
                 )));
@@ -152,20 +155,24 @@ class AppBarDialog {
 
   static void onTaskSave(
       BuildContext context,
-      String? project,
+      TaskContainer? taskContainer,
       TextEditingController nameController,
       TextEditingController descriptionController) {
-    if (project != null && nameController.text.isNotEmpty) {
-      Navigator.of(context)
-          .pop([project, nameController.text, descriptionController.text]);
+    if (taskContainer != null && nameController.text.isNotEmpty) {
+      taskContainer.addTask(TasksModel(
+          name: nameController.text,
+          projectId: taskContainer.getId(),
+          isCalendarEntry: true,
+          description: descriptionController.text));
+      Navigator.of(context).pop();
     }
   }
 
-  static Map<int, String> createTaskMenuItems(
+  static Map<TaskContainer, String> createTaskMenuItems(
       Iterable<ProjectsModelWrapper> projects) {
-    Map<int, String> taskMenuItems = {};
+    Map<TaskContainer, String> taskMenuItems = {};
     for (var project in projects) {
-      taskMenuItems[taskMenuItems.length] = project.getName();
+      taskMenuItems[project] = project.getName();
       for (var task in project.getTasks()) {
         insertTaskMenuItem(taskMenuItems, task, project.getName());
       }
@@ -173,10 +180,10 @@ class AppBarDialog {
     return taskMenuItems;
   }
 
-  static void insertTaskMenuItem(
-      Map<int, String> taskMenuItems, TasksModelWrapper task, String name) {
+  static void insertTaskMenuItem(Map<TaskContainer, String> taskMenuItems,
+      TasksModelWrapper task, String name) {
     String taskName = "$name - ${task.getName()}";
-    taskMenuItems[taskMenuItems.length] = taskName;
+    taskMenuItems[task] = taskName;
     for (var subtask in task.getSubtasks()) {
       insertTaskMenuItem(taskMenuItems, subtask, taskName);
     }

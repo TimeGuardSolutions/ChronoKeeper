@@ -65,7 +65,7 @@ class TasksModel extends ChronoKeeperModel {
         'description': description,
         'project_id': projectId,
         'parent_task_id': parentTaskId,
-        'is_calendar_entry': isCalendarEntry
+        'is_calendar_entry': (isCalendarEntry ?? false) ? 1 : 0
       };
 
   @override
@@ -73,7 +73,7 @@ class TasksModel extends ChronoKeeperModel {
         id: json['id'] as int,
         name: json['name'] as String,
         projectId: json['project_id'] as int,
-        isCalendarEntry: json['is_calendar_entry'] as bool,
+        isCalendarEntry: json['is_calendar_entry'] as int == 1,
         description: json['description'] as String?,
         parentTaskId: json['parent_task_id'] as int?,
       );

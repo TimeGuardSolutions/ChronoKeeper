@@ -2,12 +2,22 @@ import 'package:chronokeeper/models/projects.dart';
 import 'package:chronokeeper/models/tasks.dart';
 import 'package:intl/intl.dart';
 
-class ProjectsModelWrapper {
+abstract class TaskContainer {
+  int getId();
+  void addTask(TasksModel task);
+}
+
+class ProjectsModelWrapper implements TaskContainer {
   final ProjectsModel project;
   final Map<int, TasksModelWrapper> tasksCache = {};
   bool isOutdated = true;
 
   ProjectsModelWrapper({required this.project});
+
+  @override
+  int getId() {
+    return project.id ?? -1;
+  }
 
   String getName() {
     return project.name ?? "";
@@ -19,17 +29,23 @@ class ProjectsModelWrapper {
 
   Iterable<TasksModelWrapper> getTasks() {
     if (isOutdated) {
-      isOutdated != isOutdated;
+      isOutdated = false;
+      tasksCache.clear();
       updateCache();
     }
     return tasksCache.values;
   }
 
   void updateCache() async {
-    tasksCache.clear();
     await for (var task in project.readTasks()) {
       tasksCache[task.id ?? -1] = TasksModelWrapper(task: task);
     }
+  }
+
+  @override
+  void addTask(TasksModel task) async {
+    isOutdated = true;
+    await task.insert();
   }
 
   int getTotalTimeInSeconds() {
@@ -47,9 +63,14 @@ class ProjectsModelWrapper {
     }
     return wasWorkedOn;
   }
+
+  @override
+  String toString() {
+    return "name: ${project.name}\nTasks: ${tasksCache.values}\n";
+  }
 }
 
-class TasksModelWrapper {
+class TasksModelWrapper implements TaskContainer {
   final TasksModel task;
   final Map<int, TasksModelWrapper> subtasksCache = {};
   bool isSubtasksCacheOutdated = true;
@@ -58,6 +79,11 @@ class TasksModelWrapper {
   static final DateFormat formatter = DateFormat("dd.MM.yyyy");
 
   TasksModelWrapper({required this.task});
+
+  @override
+  int getId() {
+    return task.id ?? -1;
+  }
 
   String getName() {
     return task.name ?? "";
@@ -69,14 +95,14 @@ class TasksModelWrapper {
 
   Iterable<TasksModelWrapper> getSubtasks() {
     if (isSubtasksCacheOutdated) {
-      isSubtasksCacheOutdated != isSubtasksCacheOutdated;
+      isSubtasksCacheOutdated = false;
+      subtasksCache.clear();
       updateSubtasksCache();
     }
     return subtasksCache.values;
   }
 
   void updateSubtasksCache() async {
-    subtasksCache.clear();
     await for (var subtask in task.readSubtasks()) {
       subtasksCache[subtask.id ?? -1] = TasksModelWrapper(task: subtask);
     }
@@ -84,19 +110,26 @@ class TasksModelWrapper {
 
   Iterable<TimersModelWrapper> getTimers() {
     if (isTimersCacheOutdated) {
-      isTimersCacheOutdated != isTimersCacheOutdated;
+      isTimersCacheOutdated = false;
+      timersCache.clear();
       updateTimersCache();
     }
     return timersCache.values;
   }
 
   void updateTimersCache() async {
-    timersCache.clear();
     await for (var timer in task.readTimers()) {
       timersCache[timer.id ?? -1] = TimersModelWrapper(
           start: timer.start ?? DateTime.fromMicrosecondsSinceEpoch(0),
           timeDelta: timer.timeDelta ?? const Duration());
     }
+  }
+
+  @override
+  void addTask(TasksModel task) async {
+    isSubtasksCacheOutdated = true;
+    task.parentTaskId = getId();
+    await task.insert();
   }
 
   int getTotalTimeInSeconds() {
@@ -141,14 +174,14 @@ class Data {
 
   Iterable<ProjectsModelWrapper> getProjects() {
     if (isOutdated) {
-      isOutdated != isOutdated;
+      isOutdated = false;
+      projectsCache.clear();
       updateProjectsCache();
     }
     return projectsCache.values;
   }
 
   void updateProjectsCache() async {
-    projectsCache.clear();
     await for (ProjectsModel project
         in ProjectsModel.staticInstance().readAll()) {
       projectsCache[project.id ?? -1] = ProjectsModelWrapper(project: project);
