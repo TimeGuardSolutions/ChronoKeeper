@@ -11,19 +11,28 @@ class TaskWidget extends ExpansionTile {
             controlAffinity: ListTileControlAffinity.leading);
 
   static Widget create(TasksModelWrapper task) {
-    return TaskWidget(
-      title: Text(task.getName()),
-      subtitle: Text(task.getDescription()),
-      children: createChildren(task),
-    );
+    return FutureBuilder(
+        future: createChildren(task),
+        builder: (context, AsyncSnapshot<List<Widget>> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.done:
+              return TaskWidget(
+                title: Text(task.getName()),
+                subtitle: Text(task.getDescription()),
+                children: snapshot.data ?? [],
+              );
+            default:
+              return const Text("Please wait");
+          }
+        });
   }
 
-  static List<Widget> createChildren(TasksModelWrapper task) {
+  static Future<List<Widget>> createChildren(TasksModelWrapper task) async {
     final List<Widget> children = [];
-    for (TasksModelWrapper subtask in task.getSubtasks()) {
+    for (TasksModelWrapper subtask in await task.getSubtasks()) {
       children.add(TaskWidget.create(subtask));
     }
-    for (TimersModelWrapper timer in task.getTimers()) {
+    for (TimersModelWrapper timer in await task.getTimers()) {
       children.add(ListTile(
           title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

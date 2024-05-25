@@ -36,55 +36,90 @@ class ReportBodyState extends State {
           child: AspectRatio(
               aspectRatio: 1.3,
               child: Column(children: [
-                DropdownMenu<ProjectsModelWrapper>(
-                    width: MediaQuery.of(context).size.width - 4 * padding,
-                    label: const Text("Projekt"),
-                    onSelected: (project) => setState(() {
-                          selectedProject = project;
-                        }),
-                    dropdownMenuEntries: (widget as ReportBody)
-                        .data
-                        .getProjects()
-                        .map((project) =>
-                            DropdownMenuEntry<ProjectsModelWrapper>(
-                                value: project, label: project.getName()))
-                        .toList()),
+                FutureBuilder(
+                    future: (widget as ReportBody).data.getProjects(),
+                    builder: (context,
+                        AsyncSnapshot<Iterable<ProjectsModelWrapper>>
+                            snapshot) {
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.done:
+                          return DropdownMenu<ProjectsModelWrapper>(
+                              width: MediaQuery.of(context).size.width -
+                                  4 * padding,
+                              label: const Text("Projekt"),
+                              onSelected: (project) => setState(() {
+                                    selectedProject = project;
+                                  }),
+                              dropdownMenuEntries: (snapshot.data ?? [])
+                                  .map((project) =>
+                                      DropdownMenuEntry<ProjectsModelWrapper>(
+                                          value: project,
+                                          label: project.getName()))
+                                  .toList());
+                        default:
+                          return const Text("Please wait");
+                      }
+                    }),
                 Expanded(
                     child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     AspectRatio(
                       aspectRatio: 1,
-                      child: PieChart(
-                        PieChartData(
-                          pieTouchData: PieTouchData(
-                            touchCallback:
-                                (FlTouchEvent event, pieTouchResponse) {
-                              setState(() {
-                                if (!event.isInterestedForInteractions ||
-                                    pieTouchResponse == null ||
-                                    pieTouchResponse.touchedSection == null) {
-                                  touchedIndex = -1;
-                                  return;
-                                }
-                                touchedIndex = pieTouchResponse
-                                    .touchedSection!.touchedSectionIndex;
-                              });
-                            },
-                          ),
-                          borderData: FlBorderData(
-                            show: false,
-                          ),
-                          sectionsSpace: 0,
-                          centerSpaceRadius: 40,
-                          sections: showingSections(),
-                        ),
-                      ),
+                      child: FutureBuilder(
+                          future: showingSections(),
+                          builder: (context,
+                              AsyncSnapshot<List<PieChartSectionData>>
+                                  snapshot) {
+                            switch (snapshot.connectionState) {
+                              case ConnectionState.done:
+                                return PieChart(
+                                  PieChartData(
+                                    pieTouchData: PieTouchData(
+                                      touchCallback: (FlTouchEvent event,
+                                          pieTouchResponse) {
+                                        setState(() {
+                                          if (!event
+                                                  .isInterestedForInteractions ||
+                                              pieTouchResponse == null ||
+                                              pieTouchResponse.touchedSection ==
+                                                  null) {
+                                            touchedIndex = -1;
+                                            return;
+                                          }
+                                          touchedIndex = pieTouchResponse
+                                              .touchedSection!
+                                              .touchedSectionIndex;
+                                        });
+                                      },
+                                    ),
+                                    borderData: FlBorderData(
+                                      show: false,
+                                    ),
+                                    sectionsSpace: 0,
+                                    centerSpaceRadius: 40,
+                                    sections: snapshot.data,
+                                  ),
+                                );
+                              default:
+                                return const Text("Please wait");
+                            }
+                          }),
                     ),
-                    Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: createDescriptions()),
+                    FutureBuilder(
+                        future: createDescriptions(),
+                        builder:
+                            (context, AsyncSnapshot<List<Widget>> snapshot) {
+                          switch (snapshot.connectionState) {
+                            case ConnectionState.done:
+                              return Column(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: snapshot.data ?? []);
+                            default:
+                              return const Text("Please wait");
+                          }
+                        }),
                     const SizedBox(
                       width: 28,
                     ),
@@ -94,10 +129,10 @@ class ReportBodyState extends State {
     ]);
   }
 
-  List<Widget> createDescriptions() {
+  Future<List<Widget>> createDescriptions() async {
     List<Widget> descriptions = [];
     int currentIndex = 0;
-    for (TasksModelWrapper task in selectedProject?.getTasks() ?? []) {
+    for (TasksModelWrapper task in await selectedProject?.getTasks() ?? []) {
       descriptions.add(Text(
         task.getName(),
         style: TextStyle(
@@ -114,13 +149,14 @@ class ReportBodyState extends State {
     return descriptions;
   }
 
-  List<PieChartSectionData> showingSections() {
+  Future<List<PieChartSectionData>> showingSections() async {
     final double totalProjectTime =
-        selectedProject?.getTotalTimeInSeconds().toDouble() ?? 0.0;
+        (await selectedProject?.getTotalTimeInSeconds())?.toDouble() ?? 0.0;
     int currentIndex = 0;
     List<PieChartSectionData> sections = [];
-    for (TasksModelWrapper task in selectedProject?.getTasks() ?? []) {
-      final double totalTaskTime = task.getTotalTimeInSeconds().toDouble();
+    for (TasksModelWrapper task in await selectedProject?.getTasks() ?? []) {
+      final double totalTaskTime =
+          (await task.getTotalTimeInSeconds()).toDouble();
       sections.add(PieChartSectionData(
           color: ReportBody.colors[currentIndex % ReportBody.colors.length],
           value: totalTaskTime,

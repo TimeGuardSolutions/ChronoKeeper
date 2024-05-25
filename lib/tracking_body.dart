@@ -22,10 +22,19 @@ class _TrackingBodyState extends State<TrackingBody> {
           child: SingleChildScrollView(
               child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: createDayWidgets(),
-        ),
+        child: FutureBuilder(
+            future: createDayWidgets(),
+            builder: (context, AsyncSnapshot<List<Widget>> snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.done:
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: snapshot.data ?? [],
+                  );
+                default:
+                  return const Text("Please wait");
+              }
+            }),
       ))),
       Container(
           color: ChronoKeeper.secondaryBackgroundColor,
@@ -35,9 +44,9 @@ class _TrackingBodyState extends State<TrackingBody> {
     ]);
   }
 
-  List<Widget> createDayWidgets() {
+  Future<List<Widget>> createDayWidgets() async {
     final Map<String, List<ProjectsModelWrapper>> dateToProjects =
-        createMap((widget).data.getProjects());
+        await createDateToProjectsMap((widget).data);
     List<Widget> widgets = [];
     for (String date in dateToProjects.keys.toList()..sort(sortDate)) {
       widgets.add(DayWidget(

@@ -18,10 +18,20 @@ class ProjectWidget extends ExpansionTile {
             clipBehavior: Clip.antiAlias);
 
   static Widget create(ProjectsModelWrapper project) {
-    return ProjectWidget(
-        title: Text(project.getName()),
-        subtitle: Text(project.getDescription()),
-        children: createChildren(project.getTasks()));
+    return FutureBuilder(
+        future: project.getTasks(),
+        builder:
+            (context, AsyncSnapshot<Iterable<TasksModelWrapper>> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.done:
+              return ProjectWidget(
+                  title: Text(project.getName()),
+                  subtitle: Text(project.getDescription()),
+                  children: createChildren(snapshot.data ?? []));
+            default:
+              return const Text("Please wait");
+          }
+        });
   }
 
   static List<Widget> createChildren(Iterable<TasksModelWrapper> tasks) {

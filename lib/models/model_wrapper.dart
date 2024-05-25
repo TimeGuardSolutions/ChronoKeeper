@@ -9,7 +9,7 @@ abstract class TaskContainer {
 
 class ProjectsModelWrapper implements TaskContainer {
   final ProjectsModel project;
-  final Map<int, TasksModelWrapper> tasksCache = {};
+  Map<int, TasksModelWrapper> tasksCache = {};
   bool isOutdated = true;
 
   ProjectsModelWrapper({required this.project});
@@ -27,19 +27,20 @@ class ProjectsModelWrapper implements TaskContainer {
     return project.description ?? "";
   }
 
-  Iterable<TasksModelWrapper> getTasks() {
+  Future<Iterable<TasksModelWrapper>> getTasks() async {
     if (isOutdated) {
       isOutdated = false;
-      tasksCache.clear();
-      updateCache();
+      tasksCache = await createNewCache();
     }
     return tasksCache.values;
   }
 
-  void updateCache() async {
+  Future<Map<int, TasksModelWrapper>> createNewCache() async {
+    Map<int, TasksModelWrapper> tasks = {};
     await for (var task in project.readTasks()) {
-      tasksCache[task.id ?? -1] = TasksModelWrapper(task: task);
+      tasks[task.id ?? -1] = TasksModelWrapper(task: task);
     }
+    return tasks;
   }
 
   @override
@@ -48,18 +49,18 @@ class ProjectsModelWrapper implements TaskContainer {
     await task.insert();
   }
 
-  int getTotalTimeInSeconds() {
+  Future<int> getTotalTimeInSeconds() async {
     int totalSeconds = 0;
-    for (var task in getTasks()) {
-      totalSeconds += task.getTotalTimeInSeconds();
+    for (var task in await getTasks()) {
+      totalSeconds += await task.getTotalTimeInSeconds();
     }
     return totalSeconds;
   }
 
-  List<String> wasWorkedOn() {
+  Future<List<String>> wasWorkedOn() async {
     List<String> wasWorkedOn = [];
-    for (var task in getTasks()) {
-      wasWorkedOn.addAll(task.wasWorkedOn());
+    for (var task in await getTasks()) {
+      wasWorkedOn.addAll(await task.wasWorkedOn());
     }
     return wasWorkedOn;
   }
@@ -72,9 +73,9 @@ class ProjectsModelWrapper implements TaskContainer {
 
 class TasksModelWrapper implements TaskContainer {
   final TasksModel task;
-  final Map<int, TasksModelWrapper> subtasksCache = {};
+  Map<int, TasksModelWrapper> subtasksCache = {};
   bool isSubtasksCacheOutdated = true;
-  final Map<int, TimersModelWrapper> timersCache = {};
+  Map<int, TimersModelWrapper> timersCache = {};
   bool isTimersCacheOutdated = true;
   static final DateFormat formatter = DateFormat("dd.MM.yyyy");
 
@@ -93,36 +94,38 @@ class TasksModelWrapper implements TaskContainer {
     return task.description ?? "";
   }
 
-  Iterable<TasksModelWrapper> getSubtasks() {
+  Future<Iterable<TasksModelWrapper>> getSubtasks() async {
     if (isSubtasksCacheOutdated) {
       isSubtasksCacheOutdated = false;
-      subtasksCache.clear();
-      updateSubtasksCache();
+      subtasksCache = await createNewSubtasksCache();
     }
     return subtasksCache.values;
   }
 
-  void updateSubtasksCache() async {
+  Future<Map<int, TasksModelWrapper>> createNewSubtasksCache() async {
+    Map<int, TasksModelWrapper> subtasks = {};
     await for (var subtask in task.readSubtasks()) {
-      subtasksCache[subtask.id ?? -1] = TasksModelWrapper(task: subtask);
+      subtasks[subtask.id ?? -1] = TasksModelWrapper(task: subtask);
     }
+    return subtasks;
   }
 
-  Iterable<TimersModelWrapper> getTimers() {
+  Future<Iterable<TimersModelWrapper>> getTimers() async {
     if (isTimersCacheOutdated) {
       isTimersCacheOutdated = false;
-      timersCache.clear();
-      updateTimersCache();
+      timersCache = await createNewTimersCache();
     }
     return timersCache.values;
   }
 
-  void updateTimersCache() async {
+  Future<Map<int, TimersModelWrapper>> createNewTimersCache() async {
+    Map<int, TimersModelWrapper> timers = {};
     await for (var timer in task.readTimers()) {
-      timersCache[timer.id ?? -1] = TimersModelWrapper(
+      timers[timer.id ?? -1] = TimersModelWrapper(
           start: timer.start ?? DateTime.fromMicrosecondsSinceEpoch(0),
           timeDelta: timer.timeDelta ?? const Duration());
     }
+    return timers;
   }
 
   @override
@@ -132,23 +135,23 @@ class TasksModelWrapper implements TaskContainer {
     await task.insert();
   }
 
-  int getTotalTimeInSeconds() {
+  Future<int> getTotalTimeInSeconds() async {
     int totalSeconds = 0;
-    for (TasksModelWrapper task in getSubtasks()) {
-      totalSeconds += task.getTotalTimeInSeconds();
+    for (TasksModelWrapper task in await getSubtasks()) {
+      totalSeconds += await task.getTotalTimeInSeconds();
     }
-    for (TimersModelWrapper timer in getTimers()) {
+    for (TimersModelWrapper timer in await getTimers()) {
       totalSeconds += timer.timeDelta.inSeconds;
     }
     return totalSeconds;
   }
 
-  List<String> wasWorkedOn() {
+  Future<List<String>> wasWorkedOn() async {
     List<String> wasWorkedOn = [];
-    for (TasksModelWrapper task in getSubtasks()) {
-      wasWorkedOn.addAll(task.wasWorkedOn());
+    for (TasksModelWrapper task in await getSubtasks()) {
+      wasWorkedOn.addAll(await task.wasWorkedOn());
     }
-    for (TimersModelWrapper timer in getTimers()) {
+    for (TimersModelWrapper timer in await getTimers()) {
       wasWorkedOn.add(formatter.format(timer.start));
     }
     return wasWorkedOn;
@@ -169,23 +172,24 @@ class TimersModelWrapper {
 }
 
 class Data {
-  final Map<int, ProjectsModelWrapper> projectsCache = {};
+  Map<int, ProjectsModelWrapper> projectsCache = {};
   bool isOutdated = true;
 
-  Iterable<ProjectsModelWrapper> getProjects() {
+  Future<Iterable<ProjectsModelWrapper>> getProjects() async {
     if (isOutdated) {
       isOutdated = false;
-      projectsCache.clear();
-      updateProjectsCache();
+      projectsCache = await createNewProjectsCache();
     }
     return projectsCache.values;
   }
 
-  void updateProjectsCache() async {
+  static Future<Map<int, ProjectsModelWrapper>> createNewProjectsCache() async {
+    Map<int, ProjectsModelWrapper> projects = {};
     await for (ProjectsModel project
         in ProjectsModel.staticInstance().readAll()) {
-      projectsCache[project.id ?? -1] = ProjectsModelWrapper(project: project);
+      projects[project.id ?? -1] = ProjectsModelWrapper(project: project);
     }
+    return projects;
   }
 
   void addProject(String name, String? description) async {
@@ -194,11 +198,11 @@ class Data {
   }
 }
 
-Map<String, List<ProjectsModelWrapper>> createMap(
-    Iterable<ProjectsModelWrapper> projects) {
+Future<Map<String, List<ProjectsModelWrapper>>> createDateToProjectsMap(
+    Data data) async {
   Map<String, List<ProjectsModelWrapper>> dateToProjects = {};
-  for (ProjectsModelWrapper project in projects) {
-    for (String day in project.wasWorkedOn()) {
+  for (var project in await data.getProjects()) {
+    for (String day in await project.wasWorkedOn()) {
       List<ProjectsModelWrapper> projectsOnDay = dateToProjects[day] ?? [];
       projectsOnDay.add(project);
       dateToProjects[day] = projectsOnDay;
