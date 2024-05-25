@@ -58,8 +58,8 @@ class ProjectsModelWrapper implements TaskContainer {
     return totalSeconds;
   }
 
-  Future<List<String>> wasWorkedOn() async {
-    List<String> wasWorkedOn = [];
+  Future<Iterable<String>> wasWorkedOn() async {
+    Set<String> wasWorkedOn = {};
     for (var task in await getTasks()) {
       wasWorkedOn.addAll(await task.wasWorkedOn());
     }
@@ -154,8 +154,12 @@ class TasksModelWrapper implements TaskContainer {
     return totalSeconds;
   }
 
-  Future<List<String>> wasWorkedOn() async {
-    List<String> wasWorkedOn = [];
+  Future<bool> wasWorkedOnDate(String date) async {
+    return (await wasWorkedOn()).contains(date);
+  }
+
+  Future<Iterable<String>> wasWorkedOn() async {
+    Set<String> wasWorkedOn = {};
     for (TasksModelWrapper task in await getSubtasks()) {
       wasWorkedOn.addAll(await task.wasWorkedOn());
     }

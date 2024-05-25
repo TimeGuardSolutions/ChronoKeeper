@@ -17,27 +17,29 @@ class ProjectWidget extends ExpansionTile {
             collapsedShape: border,
             clipBehavior: Clip.antiAlias);
 
-  static Widget create(ProjectsModelWrapper project) {
+  static Widget create(ProjectsModelWrapper project, String date) {
     return FutureBuilder(
-        future: project.getTasks(),
-        builder:
-            (context, AsyncSnapshot<Iterable<TasksModelWrapper>> snapshot) {
+        future: createChildren(project, date),
+        builder: (context, AsyncSnapshot<List<Widget>> snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
               return ProjectWidget(
                   title: Text(project.getName()),
                   subtitle: Text(project.getDescription()),
-                  children: createChildren(snapshot.data ?? []));
+                  children: snapshot.data ?? []);
             default:
               return const Text("Please wait");
           }
         });
   }
 
-  static List<Widget> createChildren(Iterable<TasksModelWrapper> tasks) {
+  static Future<List<Widget>> createChildren(
+      ProjectsModelWrapper project, String date) async {
     List<Widget> children = [];
-    for (TasksModelWrapper task in tasks) {
-      children.add(TaskWidget.create(task));
+    for (TasksModelWrapper task in await project.getTasks()) {
+      if (await task.wasWorkedOnDate(date)) {
+        children.add(TaskWidget.create(task));
+      }
     }
     return children;
   }
