@@ -38,7 +38,7 @@ class TaskWidget extends ExpansionTile {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Text(timer.toString()),
-          Text(formatElapsedTime(timer.timeDelta.inSeconds)),
+          Text(formatElapsedTime(timer.getTimeDelta().inSeconds)),
         ],
       )));
     }

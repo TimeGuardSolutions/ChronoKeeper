@@ -40,8 +40,12 @@ class _TrackingBodyState extends State<TrackingBody> {
           color: ChronoKeeper.secondaryBackgroundColor,
           alignment: Alignment.center,
           padding: const EdgeInsets.all(10.0),
-          child: TrackingFooter(data: (widget).data))
+          child: TrackingFooter(data: (widget).data, notifyParent: refresh))
     ]);
+  }
+
+  void refresh() {
+    setState(() {});
   }
 
   Future<List<Widget>> createDayWidgets() async {

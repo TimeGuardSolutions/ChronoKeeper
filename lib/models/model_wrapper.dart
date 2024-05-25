@@ -1,5 +1,6 @@
 import 'package:chronokeeper/models/projects.dart';
 import 'package:chronokeeper/models/tasks.dart';
+import 'package:chronokeeper/models/timers.dart';
 import 'package:intl/intl.dart';
 
 abstract class TaskContainer {
@@ -122,8 +123,10 @@ class TasksModelWrapper implements TaskContainer {
     Map<int, TimersModelWrapper> timers = {};
     await for (var timer in task.readTimers()) {
       timers[timer.id ?? -1] = TimersModelWrapper(
-          start: timer.start ?? DateTime.fromMicrosecondsSinceEpoch(0),
-          timeDelta: timer.timeDelta ?? const Duration());
+          timer: TimersModel(
+              taskId: timer.taskId,
+              start: timer.start,
+              timeDelta: timer.timeDelta));
     }
     return timers;
   }
@@ -135,13 +138,18 @@ class TasksModelWrapper implements TaskContainer {
     await task.insert();
   }
 
+  Future<void> addTimer(TimersModel timer) async {
+    isTimersCacheOutdated = true;
+    await timer.insert();
+  }
+
   Future<int> getTotalTimeInSeconds() async {
     int totalSeconds = 0;
     for (TasksModelWrapper task in await getSubtasks()) {
       totalSeconds += await task.getTotalTimeInSeconds();
     }
     for (TimersModelWrapper timer in await getTimers()) {
-      totalSeconds += timer.timeDelta.inSeconds;
+      totalSeconds += timer.getTimeDelta().inSeconds;
     }
     return totalSeconds;
   }
@@ -152,22 +160,29 @@ class TasksModelWrapper implements TaskContainer {
       wasWorkedOn.addAll(await task.wasWorkedOn());
     }
     for (TimersModelWrapper timer in await getTimers()) {
-      wasWorkedOn.add(formatter.format(timer.start));
+      wasWorkedOn.add(formatter.format(timer.getStart()));
     }
     return wasWorkedOn;
   }
 }
 
 class TimersModelWrapper {
-  final DateTime start;
-  final Duration timeDelta;
+  final TimersModel timer;
   static final DateFormat formatter = DateFormat("HH:mm");
 
-  TimersModelWrapper({required this.start, required this.timeDelta});
+  TimersModelWrapper({required this.timer});
+
+  DateTime getStart() {
+    return timer.start!;
+  }
+
+  Duration getTimeDelta() {
+    return timer.timeDelta!;
+  }
 
   @override
   String toString() {
-    return "${formatter.format(start)}-${formatter.format(start.add(timeDelta))}";
+    return "${formatter.format(getStart())}-${formatter.format(getStart().add(getTimeDelta()))}";
   }
 }
 

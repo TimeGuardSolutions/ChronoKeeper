@@ -1,13 +1,16 @@
 import 'dart:async';
 import 'package:chronokeeper/main.dart';
+import 'package:chronokeeper/models/timers.dart';
 import 'package:flutter/material.dart';
 
 import 'models/model_wrapper.dart';
 
 class TrackingFooter extends StatefulWidget {
   final Data data;
+  final Function notifyParent;
 
-  const TrackingFooter({super.key, required this.data});
+  const TrackingFooter(
+      {super.key, required this.data, required this.notifyParent});
 
   @override
   State<TrackingFooter> createState() => _TrackingState();
@@ -15,24 +18,32 @@ class TrackingFooter extends StatefulWidget {
 
 class _TrackingState extends State<TrackingFooter> {
   bool isRunning = false;
+  DateTime start = DateTime.now();
   int elapsedSeconds = 0;
   IconData iconData = Icons.play_arrow;
 
-  void _onTrackTime() {
+  void _onTrackTime() async {
     isRunning = !isRunning;
     if (isRunning) {
+      start = DateTime.now();
       Timer.periodic(const Duration(milliseconds: 200), (timer) {
-        setState(() {
-          elapsedSeconds = timer.tick ~/ 5;
-          iconData = Icons.stop;
-          if (!isRunning) {
-            timer.cancel();
-            iconData = Icons.play_arrow;
-          }
-        });
+        if (mounted) {
+          setState(() {
+            elapsedSeconds = timer.tick ~/ 5;
+            iconData = Icons.stop;
+            if (!isRunning) {
+              timer.cancel();
+              iconData = Icons.play_arrow;
+            }
+          });
+        }
       });
     } else {
-      TrackingFooterDialog.openSelectTaskDialog(context, (widget).data);
+      bool? timerWasAdded = await TrackingFooterDialog.openSelectTaskDialog(
+          context, (widget).data, start, Duration(seconds: elapsedSeconds));
+      if (timerWasAdded != null && timerWasAdded) {
+        (widget).notifyParent.call();
+      }
     }
   }
 
@@ -73,35 +84,35 @@ String formatElapsedTime(int elapsedSeconds) {
 }
 
 class TrackingFooterDialog {
-  static String? _selectedProject;
-
-  static Future<String?> openSelectTaskDialog(BuildContext context, Data data) {
-    return showDialog<String>(
+  static Future<bool?> openSelectTaskDialog(
+      BuildContext context, Data data, DateTime start, Duration timeDelta) {
+    TasksModelWrapper? selectedTask;
+    return showDialog<bool>(
         context: context,
         builder: (context) => FutureBuilder(
             future: createTaskMenuItems(data),
-            builder: (context, AsyncSnapshot<Map<int, String>> snapshot) {
+            builder: (context,
+                AsyncSnapshot<Map<TasksModelWrapper, String>> snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.done:
                   return StatefulBuilder(
                       builder: (context, setState) => AlertDialog(
-                            content: DropdownButton<String>(
-                                value: _selectedProject,
+                            content: DropdownButton<TasksModelWrapper>(
+                                value: selectedTask,
                                 items: snapshot.data?.entries
                                     .map((e) => DropdownMenuItem(
-                                        value: e.key.toString(),
-                                        child: Text(e.value)))
+                                        value: e.key, child: Text(e.value)))
                                     .toList(),
-                                onChanged: (String? selectedValue) {
-                                  setState(
-                                      () => _selectedProject = selectedValue);
+                                onChanged: (TasksModelWrapper? selectedValue) {
+                                  setState(() => selectedTask = selectedValue);
                                 }),
                             actions: [
                               TextButton(
                                   onPressed: Navigator.of(context).pop,
                                   child: const Text("Abbrechen")),
                               TextButton(
-                                  onPressed: () => onSave(context),
+                                  onPressed: () => onSave(context, data, start,
+                                      timeDelta, selectedTask),
                                   child: const Text("Speichern"))
                             ],
                           ));
@@ -111,12 +122,18 @@ class TrackingFooterDialog {
             }));
   }
 
-  static void onSave(BuildContext context) {
-    Navigator.of(context).pop();
+  static void onSave(BuildContext context, Data data, DateTime start,
+      Duration timeDelta, TasksModelWrapper? selectedTask) {
+    if (selectedTask != null) {
+      selectedTask.addTimer(TimersModel(
+          taskId: selectedTask.getId(), start: start, timeDelta: timeDelta));
+      Navigator.of(context).pop(true);
+    }
   }
 
-  static Future<Map<int, String>> createTaskMenuItems(Data data) async {
-    Map<int, String> taskMenuItems = {};
+  static Future<Map<TasksModelWrapper, String>> createTaskMenuItems(
+      Data data) async {
+    Map<TasksModelWrapper, String> taskMenuItems = {};
     for (var project in await data.getProjects()) {
       for (var task in await project.getTasks()) {
         insertTaskMenuItem(taskMenuItems, task, project.getName());
@@ -125,10 +142,10 @@ class TrackingFooterDialog {
     return taskMenuItems;
   }
 
-  static void insertTaskMenuItem(Map<int, String> taskMenuItems,
+  static void insertTaskMenuItem(Map<TasksModelWrapper, String> taskMenuItems,
       TasksModelWrapper task, String name) async {
     String taskName = "$name - ${task.getName()}";
-    taskMenuItems[taskMenuItems.length] = taskName;
+    taskMenuItems[task] = taskName;
     for (var subtask in await task.getSubtasks()) {
       insertTaskMenuItem(taskMenuItems, subtask, taskName);
     }
