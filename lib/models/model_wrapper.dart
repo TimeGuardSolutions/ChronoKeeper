@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 
 abstract class TaskContainer {
   int getId();
-  void addTask(TasksModel task);
+  Future<void> addTask(TasksModel task);
 }
 
 class ProjectsModelWrapper implements TaskContainer {
@@ -44,7 +44,7 @@ class ProjectsModelWrapper implements TaskContainer {
   }
 
   @override
-  void addTask(TasksModel task) async {
+  Future<void> addTask(TasksModel task) async {
     isOutdated = true;
     await task.insert();
   }
@@ -129,7 +129,7 @@ class TasksModelWrapper implements TaskContainer {
   }
 
   @override
-  void addTask(TasksModel task) async {
+  Future<void> addTask(TasksModel task) async {
     isSubtasksCacheOutdated = true;
     task.parentTaskId = getId();
     await task.insert();

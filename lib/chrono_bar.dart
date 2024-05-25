@@ -15,9 +15,7 @@ class ChronoBar extends AppBar {
                 MenuItemButton(
                   child: const Text("Projekt erstellen"),
                   onPressed: () async {
-                    final projectData =
-                        await AppBarDialog.openProjectDialog(context);
-                    data.addProject(projectData?[0] ?? "", projectData?[1]);
+                    await AppBarDialog.openProjectDialog(context, data);
                   },
                 ),
                 MenuItemButton(
@@ -55,10 +53,10 @@ class ChronoBar extends AppBar {
 }
 
 class AppBarDialog {
-  static Future<List<String>?> openProjectDialog(BuildContext context) {
+  static Future<void> openProjectDialog(BuildContext context, Data data) {
     final nameController = TextEditingController();
     final descriptionController = TextEditingController();
-    return showDialog<List<String>>(
+    return showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
               content: Column(
@@ -85,7 +83,7 @@ class AppBarDialog {
                     child: const Text("Abbrechen")),
                 TextButton(
                     onPressed: () => onProjectSave(
-                        context, nameController, descriptionController),
+                        context, data, nameController, descriptionController),
                     child: const Text("Speichern"))
               ],
             ));
@@ -93,11 +91,12 @@ class AppBarDialog {
 
   static void onProjectSave(
       BuildContext context,
+      Data data,
       TextEditingController nameController,
       TextEditingController descriptionController) {
     if (nameController.text.isNotEmpty) {
-      Navigator.of(context)
-          .pop([nameController.text, descriptionController.text]);
+      data.addProject(nameController.text, descriptionController.text);
+      Navigator.of(context).pop();
     }
   }
 
@@ -105,7 +104,7 @@ class AppBarDialog {
     final nameController = TextEditingController();
     final descriptionController = TextEditingController();
     TaskContainer? selectedTaskContainer;
-    return showDialog<List<String>>(
+    return showDialog<void>(
         context: context,
         builder: (context) => FutureBuilder<Map<TaskContainer, String>>(
             future: createTaskMenuItems(data.getProjects()),
