@@ -1,7 +1,7 @@
-import 'package:chronokeeper/project_widget.dart';
+import 'package:chronokeeper/ui/project_widget.dart';
 import 'package:flutter/material.dart';
 
-import 'models/model_wrapper.dart';
+import '../models/model_wrapper.dart';
 
 class DayWidget extends StatefulWidget {
   final String date;

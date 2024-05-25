@@ -1,7 +1,7 @@
 import 'package:chronokeeper/models/tasks.dart';
 import 'package:flutter/material.dart';
 
-import 'models/model_wrapper.dart';
+import '../models/model_wrapper.dart';
 
 class ChronoBar extends AppBar {
   ChronoBar({

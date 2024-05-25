@@ -1,8 +1,8 @@
 import 'package:chronokeeper/models/model_wrapper.dart';
-import 'package:chronokeeper/task_widget.dart';
+import 'package:chronokeeper/ui/task_widget.dart';
 import 'package:flutter/material.dart';
 
-import 'main.dart';
+import '../main.dart';
 
 class ProjectWidget extends ExpansionTile {
   static const border = RoundedRectangleBorder(

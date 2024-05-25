@@ -1,6 +1,6 @@
 import 'package:chronokeeper/main.dart';
 import 'package:chronokeeper/models/model_wrapper.dart';
-import 'package:chronokeeper/tracking_footer.dart';
+import 'package:chronokeeper/ui/tracking_footer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'day_widget.dart';

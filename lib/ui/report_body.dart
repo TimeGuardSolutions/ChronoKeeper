@@ -2,7 +2,7 @@ import 'package:chronokeeper/main.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-import 'models/model_wrapper.dart';
+import '../models/model_wrapper.dart';
 
 class ReportBody extends StatefulWidget {
   static const List<Color> colors = [

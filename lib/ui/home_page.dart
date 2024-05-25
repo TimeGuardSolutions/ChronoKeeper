@@ -1,7 +1,7 @@
-import 'package:chronokeeper/chrono_drawer.dart';
+import 'package:chronokeeper/ui/chrono_drawer.dart';
 import 'package:chronokeeper/models/model_wrapper.dart';
-import 'package:chronokeeper/report_body.dart';
-import 'package:chronokeeper/ui.dart';
+import 'package:chronokeeper/ui/report_body.dart';
+import 'package:chronokeeper/ui/ui.dart';
 import 'package:flutter/material.dart';
 import 'chrono_bar.dart';
 import 'tracking_body.dart';

@@ -3,7 +3,7 @@ import 'package:chronokeeper/main.dart';
 import 'package:chronokeeper/models/timers.dart';
 import 'package:flutter/material.dart';
 
-import 'models/model_wrapper.dart';
+import '../models/model_wrapper.dart';
 
 class TrackingFooter extends StatefulWidget {
   final Data data;
