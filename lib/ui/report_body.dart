@@ -22,134 +22,106 @@ class ReportBody extends StatefulWidget {
 
 class ReportBodyState extends State {
   ProjectsModelWrapper? selectedProject;
+  PieChart? reportChart;
+  Widget? reportChartDescription;
   int touchedIndex = -1;
 
   @override
   Widget build(BuildContext context) {
     const double padding = 10.0;
-    return ListView(padding: const EdgeInsets.all(padding), children: [
-      Container(
-          padding: const EdgeInsets.all(padding),
-          decoration: const BoxDecoration(
-              color: ChronoKeeper.tertiaryBackgroundColor,
-              borderRadius: BorderRadius.all(Radius.circular(8))),
-          child: AspectRatio(
-              aspectRatio: 1.3,
-              child: Column(children: [
-                FutureBuilder(
-                    future: (widget as ReportBody).data.getProjects(),
-                    builder: (context,
-                        AsyncSnapshot<Iterable<ProjectsModelWrapper>>
-                            snapshot) {
-                      switch (snapshot.connectionState) {
-                        case ConnectionState.done:
-                          return DropdownMenu<ProjectsModelWrapper>(
-                              width: MediaQuery.of(context).size.width -
-                                  4 * padding,
-                              label: const Text("Projekt"),
-                              onSelected: (project) => setState(() {
-                                    selectedProject = project;
-                                  }),
-                              dropdownMenuEntries: (snapshot.data ?? [])
-                                  .map((project) =>
-                                      DropdownMenuEntry<ProjectsModelWrapper>(
-                                          value: project,
-                                          label: project.getName()))
-                                  .toList());
-                        default:
-                          return const Text("Please wait");
-                      }
-                    }),
-                Expanded(
-                    child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    AspectRatio(
-                      aspectRatio: 1,
-                      child: FutureBuilder(
-                          future: showingSections(),
-                          builder: (context,
-                              AsyncSnapshot<List<PieChartSectionData>>
-                                  snapshot) {
-                            switch (snapshot.connectionState) {
-                              case ConnectionState.done:
-                                return PieChart(
-                                  PieChartData(
-                                    pieTouchData: PieTouchData(
-                                      touchCallback: (FlTouchEvent event,
-                                          pieTouchResponse) {
-                                        setState(() {
-                                          if (!event
-                                                  .isInterestedForInteractions ||
-                                              pieTouchResponse == null ||
-                                              pieTouchResponse.touchedSection ==
-                                                  null) {
-                                            touchedIndex = -1;
-                                            return;
-                                          }
-                                          touchedIndex = pieTouchResponse
-                                              .touchedSection!
-                                              .touchedSectionIndex;
-                                        });
-                                      },
-                                    ),
-                                    borderData: FlBorderData(
-                                      show: false,
-                                    ),
-                                    sectionsSpace: 0,
-                                    centerSpaceRadius: 40,
-                                    sections: snapshot.data,
-                                  ),
-                                );
-                              default:
-                                return const Text("Please wait");
-                            }
-                          }),
-                    ),
+    return SingleChildScrollView(
+        padding: const EdgeInsets.all(padding),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+              padding: const EdgeInsets.all(padding),
+              decoration: const BoxDecoration(
+                  color: ChronoKeeper.tertiaryBackgroundColor,
+                  borderRadius: BorderRadius.all(Radius.circular(8))),
+              child: AspectRatio(
+                  aspectRatio: 1.3,
+                  child: Column(children: [
                     FutureBuilder(
-                        future: createDescriptions(),
-                        builder:
-                            (context, AsyncSnapshot<List<Widget>> snapshot) {
+                        future: (widget as ReportBody).data.getProjects(),
+                        builder: (context,
+                            AsyncSnapshot<Iterable<ProjectsModelWrapper>>
+                                snapshot) {
                           switch (snapshot.connectionState) {
                             case ConnectionState.done:
-                              return Column(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: snapshot.data ?? []);
+                              return DropdownMenu<ProjectsModelWrapper>(
+                                  width: MediaQuery.of(context).size.width -
+                                      4 * padding,
+                                  label: const Text("Projekt"),
+                                  onSelected: (project) async {
+                                    var sections =
+                                        await showingSections(project);
+                                    var descriptions =
+                                        await createDescriptions(project);
+                                    setState(() {
+                                      selectedProject = project;
+                                      reportChart = createReportChart(sections);
+                                      reportChartDescription =
+                                          createChartDescription(descriptions);
+                                    });
+                                  },
+                                  dropdownMenuEntries: (snapshot.data ?? [])
+                                      .map((project) => DropdownMenuEntry<
+                                              ProjectsModelWrapper>(
+                                          value: project,
+                                          label: project.getName()))
+                                      .toList());
                             default:
                               return const Text("Please wait");
                           }
                         }),
-                    const SizedBox(
-                      width: 28,
-                    ),
-                  ],
-                )),
-              ]))),
-    ]);
+                    Expanded(
+                        child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        AspectRatio(
+                          aspectRatio: 1,
+                          child: reportChart,
+                        ),
+                        Expanded(
+                          child: reportChartDescription ?? const Column(),
+                        ),
+                        const SizedBox(
+                          width: 28,
+                        ),
+                      ],
+                    )),
+                  ]))),
+        ]));
   }
 
-  Future<List<Widget>> createDescriptions() async {
-    List<Widget> descriptions = [];
-    int currentIndex = 0;
-    for (TasksModelWrapper task in await selectedProject?.getTasks() ?? []) {
-      descriptions.add(Text(
-        task.getName(),
-        style: TextStyle(
-            color: ReportBody.colors[currentIndex++ % ReportBody.colors.length],
-            fontWeight: FontWeight.bold),
-      ));
-      descriptions.add(const SizedBox(
-        height: 4,
-      ));
-    }
-    descriptions.add(const SizedBox(
-      height: 14,
-    ));
-    return descriptions;
+  PieChart createReportChart(List<PieChartSectionData> sectionData) {
+    return PieChart(
+      PieChartData(
+        pieTouchData: PieTouchData(
+          touchCallback: (FlTouchEvent event, pieTouchResponse) {
+            setState(() {
+              if (!event.isInterestedForInteractions ||
+                  pieTouchResponse == null ||
+                  pieTouchResponse.touchedSection == null) {
+                touchedIndex = -1;
+                return;
+              }
+              touchedIndex =
+                  pieTouchResponse.touchedSection!.touchedSectionIndex;
+            });
+          },
+        ),
+        borderData: FlBorderData(
+          show: false,
+        ),
+        sectionsSpace: 0,
+        centerSpaceRadius: 40,
+        sections: sectionData,
+      ),
+    );
   }
 
-  Future<List<PieChartSectionData>> showingSections() async {
+  Future<List<PieChartSectionData>> showingSections(
+      ProjectsModelWrapper? selectedProject) async {
     final double totalProjectTime =
         (await selectedProject?.getTotalTimeInSeconds())?.toDouble() ?? 0.0;
     int currentIndex = 0;
@@ -169,5 +141,33 @@ class ReportBodyState extends State {
       ++currentIndex;
     }
     return sections;
+  }
+
+  Widget createChartDescription(List<Widget> descriptions) {
+    return Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: descriptions);
+  }
+
+  Future<List<Widget>> createDescriptions(
+      ProjectsModelWrapper? selectedProject) async {
+    List<Widget> descriptions = [];
+    int currentIndex = 0;
+    for (TasksModelWrapper task in await selectedProject?.getTasks() ?? []) {
+      descriptions.add(Text(
+        task.getName(),
+        style: TextStyle(
+            color: ReportBody.colors[currentIndex++ % ReportBody.colors.length],
+            fontWeight: FontWeight.bold),
+      ));
+      descriptions.add(const SizedBox(
+        height: 4,
+      ));
+    }
+    descriptions.add(const SizedBox(
+      height: 14,
+    ));
+    return descriptions;
   }
 }

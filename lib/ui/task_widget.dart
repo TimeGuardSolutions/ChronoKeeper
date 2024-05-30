@@ -10,9 +10,9 @@ class TaskWidget extends ExpansionTile {
             initiallyExpanded: true,
             controlAffinity: ListTileControlAffinity.leading);
 
-  static Widget create(TasksModelWrapper task) {
+  static Widget create(TasksModelWrapper task, String date) {
     return FutureBuilder(
-        future: createChildren(task),
+        future: createChildren(task, date),
         builder: (context, AsyncSnapshot<List<Widget>> snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
@@ -27,12 +27,13 @@ class TaskWidget extends ExpansionTile {
         });
   }
 
-  static Future<List<Widget>> createChildren(TasksModelWrapper task) async {
+  static Future<List<Widget>> createChildren(
+      TasksModelWrapper task, String date) async {
     final List<Widget> children = [];
     for (TasksModelWrapper subtask in await task.getSubtasks()) {
-      children.add(TaskWidget.create(subtask));
+      children.add(TaskWidget.create(subtask, date));
     }
-    for (TimersModelWrapper timer in await task.getTimers()) {
+    for (TimersModelWrapper timer in await task.getAllTimersForDate(date)) {
       children.add(ListTile(
           title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -119,6 +119,16 @@ class TasksModelWrapper implements TaskContainer {
     return timersCache.values;
   }
 
+  Future<Iterable<TimersModelWrapper>> getAllTimersForDate(String date) async {
+    List<TimersModelWrapper> timers = [];
+    for (TimersModelWrapper timer in await getTimers()) {
+      if (date == formatter.format(timer.getStart())) {
+        timers.add(timer);
+      }
+    }
+    return timers;
+  }
+
   Future<Map<int, TimersModelWrapper>> createNewTimersCache() async {
     Map<int, TimersModelWrapper> timers = {};
     await for (var timer in task.readTimers()) {

@@ -38,7 +38,7 @@ class ProjectWidget extends ExpansionTile {
     List<Widget> children = [];
     for (TasksModelWrapper task in await project.getTasks()) {
       if (await task.wasWorkedOnDate(date)) {
-        children.add(TaskWidget.create(task));
+        children.add(TaskWidget.create(task, date));
       }
     }
     return children;
