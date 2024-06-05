@@ -1,4 +1,4 @@
-import 'package:chronokeeper/ui.dart';
+import 'package:chronokeeper/ui/ui.dart';
 import 'package:flutter/material.dart';
 
 class ChronoDrawer extends Drawer {

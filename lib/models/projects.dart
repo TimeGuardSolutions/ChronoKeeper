@@ -37,26 +37,31 @@ class ProjectsModel extends ChronoKeeperModel {
   List<String> get columns => ['id', 'name', 'description'];
 
   @override
-  int get idValue => this.id!;
+  int get idValue => id!;
 
   @override
   Map<String, Object?> toJson() =>
-      {'id': this.id, 'name': this.name, 'description': this.description};
+      {'id': id, 'name': name, 'description': description};
 
   @override
   ProjectsModel fromJson(Map<String, Object?> json) => ProjectsModel(
-    id: json['id'] as int,
-    name: json['name'] as String,
-    description: json['description'] as String?,
-  );
+        id: json['id'] as int,
+        name: json['name'] as String,
+        description: json['description'] as String?,
+      );
+
+  @override
+  String toString() {
+    return "id: $id\nname: $name\ndescription: $description\n";
+  }
 
   Stream<TasksModel> readTasks() async* {
     final Database db = await ChronoKeeperDatabase.instance.db;
     final maps = await db.query(
       TasksModel.staticInstance().tableName,
       columns: TasksModel.staticInstance().columns,
-      where: 'project_id = ?',
-      whereArgs: [this.id],
+      where: 'project_id = ? AND parent_task_id IS NULL',
+      whereArgs: [id],
     );
     for (var map in maps) {
       yield TasksModel.staticInstance().fromJson(map);

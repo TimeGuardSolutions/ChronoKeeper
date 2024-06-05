@@ -13,67 +13,49 @@ abstract class ChronoKeeperModel {
 
   Future<void> insert() async {
     final Database db = await ChronoKeeperDatabase.instance.db;
-    final int _ = await db.insert(this.tableName, this.toJson());
+    final int _ = await db.insert(tableName, toJson());
   }
 
   Future<void> update() async {
     final Database db = await ChronoKeeperDatabase.instance.db;
     final int _ = await db.update(
-      this.tableName,
-      this.toJson(),
-      where: '${this.idField} = ?',
-      whereArgs: [this.idValue],
+      tableName,
+      toJson(),
+      where: '$idField = ?',
+      whereArgs: [idValue],
     );
   }
 
   Future<void> delete() async {
     final Database db = await ChronoKeeperDatabase.instance.db;
     final int _ = await db.delete(
-      this.tableName,
-      where: '${this.idField} = ?',
-      whereArgs: [this.idValue],
+      tableName,
+      where: '$idField = ?',
+      whereArgs: [idValue],
     );
   }
 
   Future<ChronoKeeperModel?> read(int id) async {
     final Database db = await ChronoKeeperDatabase.instance.db;
     final maps = await db.query(
-      this.tableName,
-      columns: this.columns,
-      where: '${this.idField} = ?',
+      tableName,
+      columns: columns,
+      where: '$idField = ?',
       whereArgs: [id],
     );
 
     if (maps.isNotEmpty) {
-      return this.fromJson(maps.first);
+      return fromJson(maps.first);
     } else {
       return null;
     }
   }
 
-  Stream<ChronoKeeperModel> readMany(List<int> ids) async* {
-    if (ids.isEmpty) {
-      throw ArgumentError('The list of IDs cannot be empty');
-    }
-
+  Stream<T> readAll<T extends ChronoKeeperModel>() async* {
     final Database db = await ChronoKeeperDatabase.instance.db;
-    final placeholders = List.generate(ids.length, (index) => '?').join(',');
-    final maps = await db.query(
-      this.tableName,
-      columns: this.columns,
-      where: 'id IN ($placeholders)',
-      whereArgs: ids,
-    );
+    final maps = await db.query(tableName);
     for (var map in maps) {
-      yield this.fromJson(map);
-    }
-  }
-
-  Stream<ChronoKeeperModel> readAll() async* {
-    final Database db = await ChronoKeeperDatabase.instance.db;
-    final maps = await db.query(this.tableName);
-    for (var map in maps) {
-      yield this.fromJson(map);
+      yield fromJson(map) as T;
     }
   }
 
