@@ -58,4 +58,12 @@ abstract class ChronoKeeperModel {
       yield fromJson(map) as T;
     }
   }
+
+  Future<Map<int?, ChronoKeeperModel>> createIndex(List<ChronoKeeperModel> models) async {
+    Map<int?, ChronoKeeperModel> index = Map();
+    for (var model in models) {
+      index[model.idValue] = model;
+    }
+    return index;
+  }
 }

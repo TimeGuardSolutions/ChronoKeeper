@@ -8,7 +8,11 @@ class ProjectsModel extends ChronoKeeperModel {
   String? name;
   String? description;
 
-  ProjectsModel({this.id, required this.name, this.description});
+  ProjectsModel({
+    this.id,
+    required this.name,
+    this.description
+  });
 
   /* Empty Constructor for getting some properties
       that should be static but i can't get them to be static */
