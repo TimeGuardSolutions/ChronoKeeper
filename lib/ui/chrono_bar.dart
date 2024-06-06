@@ -1,6 +1,4 @@
 import 'package:chronokeeper/models/tasks.dart';
-import 'package:chronokeeper/ui/date_picker.dart';
-import 'package:chronokeeper/ui/tracking_footer.dart';
 import 'package:flutter/material.dart';
 
 import '../models/model_wrapper.dart';
@@ -26,12 +24,6 @@ class ChronoBar extends AppBar {
                     await AppBarDialog.openTaskDialog(context, data);
                   },
                 ),
-                MenuItemButton(
-                  child: const Text("Timer hinzufügen"),
-                  onPressed: () async {
-                    await AppBarDialog.openTimerDialog(context, data);
-                  },
-                )
               ],
               builder: (BuildContext context, MenuController controller,
                   Widget? child) {
@@ -206,56 +198,4 @@ class AppBarDialog {
       insertTaskMenuItem(taskMenuItems, subtask, taskName);
     }
   }
-
-  static Future<bool?> openTimerDialog(BuildContext context, Data data) {
-    TasksModelWrapper? selectedTask;
-    return showDialog<bool>(
-        context: context,
-        builder: (context) => FutureBuilder(
-            future: TrackingFooterDialog.createTaskMenuItems(data),
-            builder: (context,
-                AsyncSnapshot<Map<TasksModelWrapper, String>> snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.done:
-                  return StatefulBuilder(
-                      builder: (context, setState) => AlertDialog(
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const DatePicker(restorationId: "Timer"),
-                                DropdownButton<TasksModelWrapper>(
-                                    value: selectedTask,
-                                    items: snapshot.data?.entries
-                                        .map((e) => DropdownMenuItem(
-                                            value: e.key, child: Text(e.value)))
-                                        .toList(),
-                                    onChanged:
-                                        (TasksModelWrapper? selectedValue) {
-                                      setState(
-                                          () => selectedTask = selectedValue);
-                                    }),
-                              ],
-                            ),
-                            actions: [
-                              TextButton(
-                                  onPressed: Navigator.of(context).pop,
-                                  child: const Text("Abbrechen")),
-                              TextButton(
-                                  onPressed: () => onTimerSave(
-                                      context,
-                                      data,
-                                      DateTime.now(),
-                                      Duration.zero,
-                                      selectedTask),
-                                  child: const Text("Speichern"))
-                            ],
-                          ));
-                default:
-                  return const Text("Please wait");
-              }
-            }));
-  }
-
-  static void onTimerSave(BuildContext context, Data data, DateTime start,
-      Duration timeDelta, TasksModelWrapper? selectedTask) {}
 }

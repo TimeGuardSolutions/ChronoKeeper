@@ -1,9 +1,10 @@
 import 'dart:async';
-import 'package:chronokeeper/main.dart';
 import 'package:chronokeeper/models/timers.dart';
+import 'package:chronokeeper/ui/double_function_button.dart';
 import 'package:flutter/material.dart';
 
 import '../models/model_wrapper.dart';
+import 'date_picker.dart';
 
 class TrackingFooter extends StatefulWidget {
   final Data data;
@@ -56,16 +57,11 @@ class _TrackingState extends State<TrackingFooter> {
           formatElapsedTime(elapsedSeconds),
           style: const TextStyle(color: Colors.white),
         ),
-        Container(
-          decoration: const ShapeDecoration(
-            color: ChronoKeeper.complementaryColor,
-            shape: CircleBorder(),
-          ),
-          child: IconButton(
-            icon: Icon(iconData),
-            color: Colors.black,
-            onPressed: _onTrackTime,
-          ),
+        DoubleFunctionButton(
+          iconData: iconData,
+          onTap: _onTrackTime,
+          onLongPress: () =>
+              TrackingFooterDialog.openTimerDialog(context, widget.data),
         )
       ],
     );
@@ -150,4 +146,73 @@ class TrackingFooterDialog {
       insertTaskMenuItem(taskMenuItems, subtask, taskName);
     }
   }
+
+  static Future<bool?> openTimerDialog(BuildContext context, Data data) {
+    TasksModelWrapper? selectedTask;
+    return showDialog<bool>(
+        context: context,
+        builder: (context) => FutureBuilder(
+            future: createTaskMenuItems(data),
+            builder: (context,
+                AsyncSnapshot<Map<TasksModelWrapper, String>> snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.done:
+                  return StatefulBuilder(
+                      builder: (context, setState) => AlertDialog(
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const DatePicker(restorationId: "Timer"),
+                                DropdownButton<TasksModelWrapper>(
+                                    value: selectedTask,
+                                    items: snapshot.data?.entries
+                                        .map((e) => DropdownMenuItem(
+                                            value: e.key, child: Text(e.value)))
+                                        .toList(),
+                                    onChanged:
+                                        (TasksModelWrapper? selectedValue) {
+                                      setState(
+                                          () => selectedTask = selectedValue);
+                                    }),
+                                OutlinedButton(
+                                    onPressed: () => showTimePicker(
+                                          context: context,
+                                          initialTime: const TimeOfDay(
+                                              hour: 10, minute: 47),
+                                          builder: (BuildContext context,
+                                              Widget? child) {
+                                            return MediaQuery(
+                                              data: MediaQuery.of(context)
+                                                  .copyWith(
+                                                      alwaysUse24HourFormat:
+                                                          true),
+                                              child: child!,
+                                            );
+                                          },
+                                        ),
+                                    child: const Text("Time")),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                  onPressed: Navigator.of(context).pop,
+                                  child: const Text("Abbrechen")),
+                              TextButton(
+                                  onPressed: () => onTimerSave(
+                                      context,
+                                      data,
+                                      DateTime.now(),
+                                      Duration.zero,
+                                      selectedTask),
+                                  child: const Text("Speichern"))
+                            ],
+                          ));
+                default:
+                  return const Text("Please wait");
+              }
+            }));
+  }
+
+  static void onTimerSave(BuildContext context, Data data, DateTime start,
+      Duration timeDelta, TasksModelWrapper? selectedTask) {}
 }
