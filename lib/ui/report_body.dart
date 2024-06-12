@@ -6,11 +6,16 @@ import '../models/model_wrapper.dart';
 
 class ReportBody extends StatefulWidget {
   static const List<Color> colors = [
-    Colors.orange,
-    Colors.blue,
-    Colors.red,
-    Colors.green,
-    Colors.amber
+    Color.fromRGBO(255, 99, 71, 1.0),
+    Color.fromRGBO(255, 215, 0, 1.0),
+    Color.fromRGBO(127, 255, 212, 1.0),
+    Color.fromRGBO(147, 112, 219, 1.0),
+    Color.fromRGBO(0, 255, 0, 1.0),
+    Color.fromRGBO(255, 105, 180, 1.0),
+    Color.fromRGBO(255, 165, 0, 1.0),
+    Color.fromRGBO(0, 191, 255, 1.0),
+    Color.fromRGBO(138, 43, 226, 1.0),
+    Color.fromRGBO(50, 205, 50, 1.0)
   ];
 
   final Data data;
@@ -29,68 +34,79 @@ class ReportBodyState extends State {
   @override
   Widget build(BuildContext context) {
     const double padding = 10.0;
-    return SingleChildScrollView(
-        padding: const EdgeInsets.all(padding),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(
+    return CustomScrollView(
+      slivers: [
+        SliverFillRemaining(
+            hasScrollBody: false,
+            child: Padding(
               padding: const EdgeInsets.all(padding),
-              decoration: const BoxDecoration(
-                  color: ChronoKeeper.tertiaryBackgroundColor,
-                  borderRadius: BorderRadius.all(Radius.circular(8))),
-              child: AspectRatio(
-                  aspectRatio: 1.3,
-                  child: Column(children: [
-                    FutureBuilder(
-                        future: (widget as ReportBody).data.getProjects(),
-                        builder: (context,
-                            AsyncSnapshot<Iterable<ProjectsModelWrapper>>
-                                snapshot) {
-                          switch (snapshot.connectionState) {
-                            case ConnectionState.done:
-                              return DropdownMenu<ProjectsModelWrapper>(
-                                  width: MediaQuery.of(context).size.width -
-                                      4 * padding,
-                                  label: const Text("Projekt"),
-                                  onSelected: (project) async {
-                                    var sections =
-                                        await showingSections(project);
-                                    var descriptions =
-                                        await createDescriptions(project);
-                                    setState(() {
-                                      selectedProject = project;
-                                      reportChart = createReportChart(sections);
-                                      reportChartDescription =
-                                          createChartDescription(descriptions);
-                                    });
-                                  },
-                                  dropdownMenuEntries: (snapshot.data ?? [])
-                                      .map((project) => DropdownMenuEntry<
-                                              ProjectsModelWrapper>(
-                                          value: project,
-                                          label: project.getName()))
-                                      .toList());
-                            default:
-                              return const Text("Please wait");
-                          }
-                        }),
-                    Expanded(
-                        child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        AspectRatio(
-                          aspectRatio: 1,
-                          child: reportChart,
-                        ),
-                        Expanded(
-                          child: reportChartDescription ?? const Column(),
-                        ),
-                        const SizedBox(
-                          width: 28,
-                        ),
-                      ],
-                    )),
-                  ]))),
-        ]));
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Container(
+                    padding: const EdgeInsets.all(padding),
+                    decoration: const BoxDecoration(
+                        color: ChronoKeeper.tertiaryBackgroundColor,
+                        borderRadius: BorderRadius.all(Radius.circular(8))),
+                    child: AspectRatio(
+                        aspectRatio: 1.3,
+                        child: Column(children: [
+                          FutureBuilder(
+                              future: (widget as ReportBody).data.getProjects(),
+                              builder: (context,
+                                  AsyncSnapshot<Iterable<ProjectsModelWrapper>>
+                                      snapshot) {
+                                switch (snapshot.connectionState) {
+                                  case ConnectionState.done:
+                                    return DropdownMenu<ProjectsModelWrapper>(
+                                        width:
+                                            MediaQuery.of(context).size.width -
+                                                4 * padding,
+                                        label: const Text("Projekt"),
+                                        onSelected: (project) async {
+                                          var sections =
+                                              await showingSections(project);
+                                          var descriptions =
+                                              await createDescriptions(project);
+                                          setState(() {
+                                            selectedProject = project;
+                                            reportChart =
+                                                createReportChart(sections);
+                                            reportChartDescription =
+                                                createChartDescription(
+                                                    descriptions);
+                                          });
+                                        },
+                                        dropdownMenuEntries: (snapshot.data ??
+                                                [])
+                                            .map((project) => DropdownMenuEntry<
+                                                    ProjectsModelWrapper>(
+                                                value: project,
+                                                label: project.getName()))
+                                            .toList());
+                                  default:
+                                    return const Text("Please wait");
+                                }
+                              }),
+                          Expanded(
+                              child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              AspectRatio(
+                                aspectRatio: 1,
+                                child: reportChart,
+                              ),
+                              Expanded(
+                                child: reportChartDescription ?? const Column(),
+                              ),
+                              const SizedBox(
+                                width: 28,
+                              ),
+                            ],
+                          )),
+                        ]))),
+              ]),
+            ))
+      ],
+    );
   }
 
   PieChart createReportChart(List<PieChartSectionData> sectionData) {

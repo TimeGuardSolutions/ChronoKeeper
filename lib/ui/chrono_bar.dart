@@ -23,7 +23,7 @@ class ChronoBar extends AppBar {
                   onPressed: () async {
                     await AppBarDialog.openTaskDialog(context, data);
                   },
-                )
+                ),
               ],
               builder: (BuildContext context, MenuController controller,
                   Widget? child) {
